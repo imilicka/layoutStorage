@@ -60,14 +60,16 @@ public class BigDataTesting {
 
 	public static void main(String[] args) throws QueryEvaluationException {
 
-		String urlString = "http://www.fit.vutbr.cz";
+		//String urlString = "http://www.fit.vutbr.cz";
+		//String urlString = "http://cssbox.sourceforge.net/";
+		String urlString = "http://www.mws.cz/";
 		
 		BigdataInterface bdi = null;
 		
 		
 		try {
 			
-            CSSBoxTreeBuilder build = new CSSBoxTreeBuilder(new Dimension(800, 600));
+            CSSBoxTreeBuilder build = new CSSBoxTreeBuilder(new Dimension(800, 900));
             build.parse(urlString);
             Page page = build.getPage();
             
@@ -78,10 +80,21 @@ public class BigDataTesting {
 			
 			
 			List<String> listURL = bdi.getDistinctUrlPages();//bdi.getDistinctUrlPages();
-			int celkemUrl = listURL.size();
+			
+			for(String url : listURL) {
+				System.out.println("URL:"+url);
+			}
 			
 			
-			System.out.println("celkem "+celkemUrl);
+			
+			List<String> listLaunch = bdi.getLaunchForUrl(urlString);
+			
+			for(String launch : listLaunch) {
+				System.out.println("URL Launch:"+launch);
+			}
+			
+			
+
 			
 		} catch (RepositoryException e2) {
 			e2.printStackTrace();
@@ -96,7 +109,7 @@ public class BigDataTesting {
 			e.printStackTrace();
 		}
 		
-		
+		/*
 		try {
 
 			String uniqueID = urlString+"#20141207155202";
@@ -112,6 +125,7 @@ public class BigDataTesting {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
+		*/
 	}
 
 }

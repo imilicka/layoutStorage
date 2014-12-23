@@ -48,7 +48,18 @@
 		<artifactId>layout-cssbox</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</dependency>
-
+    <dependency>
+      <groupId>cz.vutbr.fit.layout</groupId>
+      <artifactId>layout-segmentation</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>cz.vutbr.fit.layout</groupId>
+      <artifactId>layout-classify</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+      <scope>compile</scope>
+    </dependency>
 		 	
   </dependencies>
 

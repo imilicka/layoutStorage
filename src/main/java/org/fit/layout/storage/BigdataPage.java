@@ -1,5 +1,6 @@
 package org.fit.layout.storage;
 
+import java.awt.Color;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -10,6 +11,8 @@ import java.util.List;
 
 import org.fit.layout.impl.DefaultBox;
 import org.fit.layout.impl.DefaultPage;
+import org.fit.layout.model.Box;
+import org.fit.layout.model.Rectangular;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Statement;
 import org.openrdf.model.vocabulary.RDF;
@@ -44,16 +47,18 @@ public class BigdataPage extends DefaultPage {
 	{
 		List<DefaultBox> allElements = new ArrayList<>();
 
-		
+		try {
 		Iterator<Statement> elementStatements = pageStatements.match(null, RDF.TYPE, null);
 			
-		while( elementStatements.hasNext()) {
-			
-			Statement s = elementStatements.next();
-			Iterator<Statement> attributes = pageStatements.match(s.getSubject(), null, null);
-			allElements.add( new BigdataBox(attributes) ); 
-			
+			while( elementStatements.hasNext()) {
+				
+				Statement s = elementStatements.next();
+				Iterator<Statement> attributes = pageStatements.match(s.getSubject(), null, null);
+				allElements.add(new BigdataBox(attributes) ); 
+				
+			}
 		}
+		catch(Exception ex) {}
 		
 		return allElements;
 	}
@@ -74,8 +79,8 @@ public class BigdataPage extends DefaultPage {
 	    //sorting the individuals
 		List<DefaultBox> list = sortBySize(elements);
 		
-		
 	    DefaultBox root = list.get(0);
+	    
 	    this.setHeight(root.getHeight());
 	    this.setWidth(root.getWidth());
 	    
@@ -84,7 +89,7 @@ public class BigdataPage extends DefaultPage {
 		list.remove(list.get(0)); 
 		
 		//process inner elements in the document tree
-		appendTo(list.get(0), getInnerIndividuals(list.get(0), list));
+		appendTo(root, getInnerIndividuals(root, list));
 	}
 	
 	/**
@@ -105,7 +110,15 @@ public class BigdataPage extends DefaultPage {
 				return (width2*height2)-(width1*height1); 
             }}); 
 	    
-	    return elements;
+	    List<DefaultBox> dlb = new ArrayList<>();
+	    int i = 0;
+	    for(DefaultBox db : elements ) {
+	    	
+	    	dlb.add(db);
+	    }
+	    
+	    return dlb;
+	    //return elements;
 	}
 	
 	
@@ -123,7 +136,7 @@ public class BigdataPage extends DefaultPage {
 		//append actual node into tree
 		DefaultBox actual = (DefaultBox)list.get(0);
 		appendInd.add(actual);
-		list.remove(actual);
+		list.remove(list.get(0));
 		
 		if(list.size()==0)
 			return;
@@ -133,7 +146,7 @@ public class BigdataPage extends DefaultPage {
 		
 		
 		if(inner.size()>0)
-			appendTo(list.get(0), inner);
+			appendTo(actual, inner);
 		
 		if(outer.size()>0)
 			appendTo(appendInd, outer);
@@ -147,8 +160,10 @@ public class BigdataPage extends DefaultPage {
 	private List<DefaultBox> getInnerIndividuals(DefaultBox individual, List<DefaultBox> list) {
 		List<DefaultBox> listNested = new ArrayList<DefaultBox>();
 		
+		System.out.println("je zaklad Inner height:"+individual.getHeight()+ " width:"+individual.getWidth()+" x"+individual.getX1()+" y1"+individual.getY1()+" x2:"+individual.getX2()+" y2"+individual.getY2() );
 		for(DefaultBox ind: list) {
 			if(isNested(individual, ind)) {
+				System.out.println("je Inner height:"+ind.getHeight()+ " width:"+ind.getWidth()+" x"+ind.getX1()+" y1"+ind.getY1()+" x2"+ind.getX2()+" y2"+ind.getY2() );
 				listNested.add(ind);
 			}
 		}

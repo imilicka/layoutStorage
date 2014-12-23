@@ -54,7 +54,7 @@ public class BigdataBox extends DefaultBox implements Box {
 					
 					String color = attribute.getObject().stringValue();
 					//color = color.substring(1, color.length());
-					setBackgroundColor(hex2Rgb(color));
+					setColor(hex2Rgb(color));
 					
 					break;
 				case BoxOnt.fontDecoration:
@@ -82,6 +82,7 @@ public class BigdataBox extends DefaultBox implements Box {
 				case BoxOnt.hasTag:
 					break;
 				case BoxOnt.hasText:
+					setType(Type.TEXT_CONTENT);
 					setText(attribute.getObject().stringValue());
 					break;
 				case BoxOnt.height:
@@ -100,9 +101,10 @@ public class BigdataBox extends DefaultBox implements Box {
 		}
 		
 		
-		if(height!=null && width!=null && x!=null && y!=null) {
-			System.out.println("nastavuji rozmery");
-			//setBounds(new Rectangular(x, y, x+width, y+height));
+		if (height!=null && width!=null && x!=null && y!=null) 
+		{
+			
+			setBounds(new Rectangular(x, y, x+width, y+height));
 			//setContentBounds(new Rectangular(x, y, x+width, y+height));
 			setVisualBounds(new Rectangular(x, y, x+width, y+height));
 		}

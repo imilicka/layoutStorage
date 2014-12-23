@@ -13,6 +13,7 @@ import org.fit.cssbox.layout.ReplacedImage;
 import org.fit.cssbox.layout.TextBox;
 import org.fit.layout.cssbox.ContentImageImpl;
 import org.fit.layout.model.Box;
+import org.fit.layout.model.Box.Type;
 import org.fit.layout.model.ContentImage;
 import org.fit.layout.model.Page;
 import org.fit.layout.model.Rectangular;
@@ -47,6 +48,7 @@ public class BigdataGraph {
 		
 		inicializeGraph(page.getSourceURL().toString() );
 		
+		this.insertBox(page.getRoot());
 		insertAllBoxes(page.getRoot());
 	}
 	
@@ -99,9 +101,12 @@ public class BigdataGraph {
 	private void insertAllBoxes(Box parent) {
 		
 		//in case of text block
-		if((parent instanceof TextBox)) {
+		/*if((parent instanceof TextBox)) {
 			return;
 		}
+		*/
+		
+		
 		
 		//in case of element with children
 		
@@ -110,14 +115,16 @@ public class BigdataGraph {
 			this.insertBox(sub1);
 		}
 		
+		
 		//if there are some children
 		for (int i = 0; i < parent.getChildCount(); i++) {
 			Box sub1 = parent.getChildBox(i);
 
-			if(!(parent instanceof TextBox)) {
+			//if(!(parent instanceof TextBox)) {
 				insertAllBoxes( sub1 );
-			}
+			//}
 		}
+		
 	}
 
 	
@@ -161,14 +168,22 @@ public class BigdataGraph {
 		} catch(Exception ex) { }
 		
 	    
+	    //add text content into element
+	    if(box.getType() == Type.TEXT_CONTENT) {
+	    	graph.add(individual, new URIImpl(BoxOnt.hasText.toString()), vf.createLiteral(box.getText()) );
+	    }
+	    
+	    /*
 		//it appends the text content
 	    try {
 	    	if(box instanceof TextBox) {
-	    		graph.add(individual, new URIImpl(BoxOnt.hasText.toString()), vf.createLiteral(box.getText()) );
+	    		
 	    	} else if(box instanceof ReplacedBox) {
 	    				
 	    	}
 	    } catch(Exception ex) { }
+	    */
+	    
 	    
 	    
 	    //individual.addLiteral(BoxOnto.color, colorString(sub.getVisualContext().getColor()));
