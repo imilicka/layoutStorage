@@ -1,18 +1,20 @@
 package org.fit.layout.storage.example;
 
 import java.awt.Dimension;
-import java.io.FileOutputStream;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.Iterator;
+
 import java.util.List;
 
 import org.fit.layout.cssbox.CSSBoxTreeBuilder;
 import org.fit.layout.model.Page;
 import org.fit.layout.storage.BigdataInterface;
+import org.fit.layout.storage.BigdataLaunch;
 import org.fit.layout.storage.BigdataPage;
 import org.fit.layout.storage.ontology.BoxOnt;
 import org.openrdf.model.Graph;
+import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -69,8 +71,20 @@ public class BigDataTesting {
 		
 		try {
 			
+			
             CSSBoxTreeBuilder build = new CSSBoxTreeBuilder(new Dimension(800, 900));
-            build.parse(urlString);
+            try {
+				build.parse(urlString);
+			} catch (MalformedURLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SAXException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
             Page page = build.getPage();
             
             
@@ -87,10 +101,17 @@ public class BigDataTesting {
 			
 			
 			
-			List<String> listLaunch = bdi.getLaunchForUrl(urlString);
+			List<BigdataLaunch> listLaunch = bdi.getLaunchesForUrl(urlString);
 			
-			for(String launch : listLaunch) {
-				System.out.println("URL Launch:"+launch);
+			for(BigdataLaunch launchInfo : listLaunch) {
+				System.out.println("URL Launch:"+launchInfo.getDate());
+				
+				/*
+				Graph allLaunchStatements = bdi.get getGraphForLaunch(launchInfo.getDate());
+				page = new BigdataPage(allLaunchStatements, "http://www.test.cz" );
+				*/
+				Model launch = bdi.getModelForLaunch(launchInfo.getDate());
+				page = new BigdataPage(launch, "http://www.test.cz" );
 			}
 			
 			
@@ -98,13 +119,7 @@ public class BigDataTesting {
 			
 		} catch (RepositoryException e2) {
 			e2.printStackTrace();
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SAXException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

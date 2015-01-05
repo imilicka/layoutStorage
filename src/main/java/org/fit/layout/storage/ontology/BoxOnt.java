@@ -15,6 +15,8 @@ public class BoxOnt {
 	
     public static final String NAMESPACE = "http://www.mws.cz/render.owl#";
     
+    public static final String id = "http://www.mws.cz/render.owl#id";
+    
     public static final String belongsTo = "http://www.mws.cz/render.owl#belongsTo";
     
     public static final String containsImage = "http://www.mws.cz/render.owl#containsImage" ;

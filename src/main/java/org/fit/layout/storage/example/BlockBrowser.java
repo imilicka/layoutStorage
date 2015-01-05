@@ -263,7 +263,7 @@ public class BlockBrowser
             
             
             BigdataInterface bdi = new BigdataInterface();
-            Graph allLaunchStatements = bdi.getIndividualForLaunch("20141222205950");
+            Graph allLaunchStatements = bdi.getGraphForLaunch("20141223093324");
 			
 			//TODO modify constructor
 			page = new BigdataPage(allLaunchStatements, "http://www.test.cz" );

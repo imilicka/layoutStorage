@@ -14,6 +14,7 @@ import org.fit.layout.impl.DefaultPage;
 import org.fit.layout.model.Box;
 import org.fit.layout.model.Rectangular;
 import org.openrdf.model.Graph;
+import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
 import org.openrdf.model.vocabulary.RDF;
 
@@ -37,6 +38,17 @@ public class BigdataPage extends DefaultPage {
 		
 	}
 	
+	public BigdataPage(Model pageStatements, String urlString) throws MalformedURLException {
+		
+		super(new URL(urlString));
+		
+		List<DefaultBox> boxes = getAllPageBoxes(pageStatements);
+		createDocumentTree(boxes);
+		
+	}
+
+	
+	
 	
 	/**
 	 * conversion all RDF statements into a list of Boxes
@@ -48,12 +60,52 @@ public class BigdataPage extends DefaultPage {
 		List<DefaultBox> allElements = new ArrayList<>();
 
 		try {
+			/*
+			 Model model = (org.openrdf.model.Model)pageStatements;
+			 Model m = model.filter(null, RDF.TYPE, null);
+			 
+			 System.out.println ( "velikost -" + m.size() );
+			 */
+			 
 		Iterator<Statement> elementStatements = pageStatements.match(null, RDF.TYPE, null);
 			
 			while( elementStatements.hasNext()) {
 				
 				Statement s = elementStatements.next();
 				Iterator<Statement> attributes = pageStatements.match(s.getSubject(), null, null);
+				allElements.add(new BigdataBox(attributes) ); 
+				
+			}
+		}
+		catch(Exception ex) {}
+		
+		return allElements;
+	}
+	
+	
+	/**
+	 * conversion all RDF statements into a list of Boxes
+	 * @param pageStatements
+	 * @return list of Boxes that must be converted into a tree
+	 */
+	private List<DefaultBox> getAllPageBoxes(Model pageStatements ) 
+	{
+		List<DefaultBox> allElements = new ArrayList<>();
+
+		try {
+			/*
+			 Model model = (org.openrdf.model.Model)pageStatements;
+			 Model m = model.filter(null, RDF.TYPE, null);
+			 
+			 System.out.println ( "velikost -" + m.size() );
+			 */
+			 
+			
+			
+			for( Statement s: pageStatements.filter(null, RDF.TYPE, null) ) {
+				
+				
+				Model attributes = pageStatements.filter(s.getSubject(), null, null);
 				allElements.add(new BigdataBox(attributes) ); 
 				
 			}

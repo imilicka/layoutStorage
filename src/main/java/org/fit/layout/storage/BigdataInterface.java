@@ -1,24 +1,24 @@
 package org.fit.layout.storage;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.fit.layout.model.Page;
 import org.fit.layout.storage.ontology.BoxOnt;
 import org.openrdf.model.Graph;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.GraphImpl;
+
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.query.BindingSet;
+
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.Query;
+
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
@@ -26,10 +26,9 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 
-import com.bigdata.rdf.sail.remote.BigdataSailRemoteRepository;
+
 import com.bigdata.rdf.sail.webapp.client.IPreparedGraphQuery;
-import com.bigdata.rdf.sail.webapp.client.IPreparedTupleQuery;
-import com.bigdata.rdf.sail.webapp.client.RemoteRepository;
+
 
 
 
@@ -108,7 +107,7 @@ public class BigdataInterface  {
 	 * @param url it defines url of processed site
 	 * @return list of specific launches
 	 */
-	public List<String> getUrlLaunches(String url) 
+	private List<String> getLauncheIds(String url) 
 	{
 		List<String> output = new ArrayList<String>();
 		
@@ -120,11 +119,12 @@ public class BigdataInterface  {
 			
 			//stores all launches into list of string
 			while(result.hasNext()) {
+				
 				Statement row = result.next();
 				String launch = row.getSubject().toString(); 
-		   		if(!output.contains(launch)) {
+		   		
+				if(!output.contains(launch))
 		   			output.add(launch);
-		   		}
 			}
 			
 		} catch (RepositoryException e) {
@@ -141,6 +141,44 @@ public class BigdataInterface  {
 		return output;
 	}
 
+	
+	private BigdataLaunch getLaunchInfo(String launchId) {
+		
+		BigdataLaunch bdl = null;
+		
+		try {
+			URIImpl launchSubject = new URIImpl(launchId) ;
+			GraphQueryResult results = bddb.repo.getRemoteRepository().getStatements(launchSubject, null, null, true); //.getStatements(null, sourceUrlPredicate, vf.createLiteral(url), true);		
+		
+			bdl = new BigdataLaunch(results);
+		} 
+		catch (QueryEvaluationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return bdl;
+	}
+	
+	public List<BigdataLaunch> getLaunchesForUrl(String url) {
+		
+		List<String> ids = getLauncheIds(url);
+		List<BigdataLaunch> launches = new ArrayList<BigdataLaunch>();
+		
+		for(String id: ids) {
+			
+			BigdataLaunch bdl = getLaunchInfo(id);
+			
+			if(bdl!=null)
+				launches.add(bdl);
+		}
+		
+		return launches;
+	}
+	
 		
 	/**
 	 * stores page model into bigdata database
@@ -188,13 +226,16 @@ public class BigdataInterface  {
 	
 	
 	/**
-	 * it returns individuals belonging specific launch
+	 * it returns Graph of statements belonging specific launch
+	 * 
 	 * 
 	 * @param launchId
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
+	 * @deprecated use {@link #getModelForLaunch()} instead. 
 	 */
-	public Graph getIndividualForLaunch(String launchId) throws Exception 
+	@Deprecated 
+	public Graph getGraphForLaunch(String launchId) throws Exception 
 	{
 		String query = "PREFIX app: <http://www.mws.cz/render.owl#>" +
 					   "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>" +
@@ -209,7 +250,9 @@ public class BigdataInterface  {
 		IPreparedGraphQuery pgq = bddb.repo.getRemoteRepository().prepareGraphQuery(query);
 		GraphQueryResult gqr = pgq.evaluate();
 		
-		Graph graph = new GraphImpl();
+		
+		
+		Graph graph = new LinkedHashModel();
 
 		
 		while(gqr.hasNext()) {
@@ -219,6 +262,43 @@ public class BigdataInterface  {
 		
 		return graph;
 	}
+	
+	
+	/**
+	 * it builds Model variable (specific type of Graph) for the information
+	 * 
+	 * 
+	 * @param launchId
+	 * @return
+	 * @throws Exception
+	 */
+	public Model getModelForLaunch(String launchId) throws Exception 
+	{
+		String query = "PREFIX app: <http://www.mws.cz/render.owl#>" +
+					   "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>" +
+					   "CONSTRUCT { ?s ?p ?o } "+
+					   "WHERE { ?s ?p ?o . " +
+					   "?s rdf:type app:Box . "+ 
+					   "?s ?b ?a . "+
+					   "?a app:LaunchDatetime \""+launchId +"\". "+
+					   "?a rdf:type app:Launch  }";
+		
+		
+		IPreparedGraphQuery pgq = bddb.repo.getRemoteRepository().prepareGraphQuery(query);
+		GraphQueryResult gqr = pgq.evaluate();
+		
+		// create a new Model to put statements in
+		Model model = new LinkedHashModel(); 
+
+		
+		while(gqr.hasNext()) {
+			model.add(gqr.next());
+		}
+		
+		
+		return model;
+	}
+	
 	
 	
 	/**
