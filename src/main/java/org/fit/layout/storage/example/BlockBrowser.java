@@ -22,6 +22,7 @@ import org.fit.layout.storage.BigdataInterface;
 import org.fit.layout.storage.BigdataPage;
 import org.fit.segm.grouping.AreaTree;
 import org.openrdf.model.Graph;
+import org.openrdf.model.Model;
 
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
@@ -262,11 +263,11 @@ public class BlockBrowser
             //page = proc.renderPage(urlstring, contentScroll.getSize());
             
             
-            BigdataInterface bdi = new BigdataInterface();
-            Graph allLaunchStatements = bdi.getGraphForLaunch("20141223093324");
+            BigdataInterface bdi = new BigdataInterface("http://pcuifs2.fit.vutbr.cz:8080/bigdata/sparql",false);
+            Model modelStatements = bdi.getModelForLaunch("20141223093324");
 			
 			//TODO modify constructor
-			page = new BigdataPage(allLaunchStatements, "http://www.test.cz" );
+			page = new BigdataPage(modelStatements, "http://www.test.cz" );
             
 			contentCanvas = createContentCanvas();
             
@@ -312,7 +313,7 @@ public class BlockBrowser
             });
             contentScroll.setViewportView(contentCanvas);
             
-            //proc.segmentPage(page);
+            proc.segmentPage(page);
 
             dispFinished = true;
             saveButton.setEnabled(true);

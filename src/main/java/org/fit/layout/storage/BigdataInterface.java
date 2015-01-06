@@ -38,7 +38,7 @@ public class BigdataInterface  {
 	BigdataConnector bddb;
 	Boolean lbs = false;
 	String url = "http://localhost:8080/bigdata/sparql";
-	//String url = "http://pcmilicka.fit.vutbr.cz:18080/bigdata/sparql";
+	
 	
 	
 	

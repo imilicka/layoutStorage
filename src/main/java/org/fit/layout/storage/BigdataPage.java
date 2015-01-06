@@ -54,20 +54,16 @@ public class BigdataPage extends DefaultPage {
 	 * conversion all RDF statements into a list of Boxes
 	 * @param pageStatements
 	 * @return list of Boxes that must be converted into a tree
+	 * @deprecated it uses old representation of document model
 	 */
+	@Deprecated
 	private List<DefaultBox> getAllPageBoxes(Graph pageStatements ) 
 	{
 		List<DefaultBox> allElements = new ArrayList<>();
 
 		try {
-			/*
-			 Model model = (org.openrdf.model.Model)pageStatements;
-			 Model m = model.filter(null, RDF.TYPE, null);
 			 
-			 System.out.println ( "velikost -" + m.size() );
-			 */
-			 
-		Iterator<Statement> elementStatements = pageStatements.match(null, RDF.TYPE, null);
+			Iterator<Statement> elementStatements = pageStatements.match(null, RDF.TYPE, null);
 			
 			while( elementStatements.hasNext()) {
 				
@@ -93,21 +89,10 @@ public class BigdataPage extends DefaultPage {
 		List<DefaultBox> allElements = new ArrayList<>();
 
 		try {
-			/*
-			 Model model = (org.openrdf.model.Model)pageStatements;
-			 Model m = model.filter(null, RDF.TYPE, null);
-			 
-			 System.out.println ( "velikost -" + m.size() );
-			 */
-			 
-			
 			
 			for( Statement s: pageStatements.filter(null, RDF.TYPE, null) ) {
-				
-				
 				Model attributes = pageStatements.filter(s.getSubject(), null, null);
 				allElements.add(new BigdataBox(attributes) ); 
-				
 			}
 		}
 		catch(Exception ex) {}
@@ -177,24 +162,24 @@ public class BigdataPage extends DefaultPage {
 	/**
 	 * it appends individual into tree
 	 * @param appendInd
-	 * @param list
+	 * @param sourceList
 	 */
-	private void appendTo(DefaultBox appendInd, List<DefaultBox> list) 
+	private void appendTo(DefaultBox appendInd, List<DefaultBox> sourceList) 
 	{
 		
-		if(list==null || list.size()==0)
+		if(sourceList==null || sourceList.size()==0)
 			return;
 		
 		//append actual node into tree
-		DefaultBox actual = (DefaultBox)list.get(0);
+		DefaultBox actual = (DefaultBox)sourceList.get(0);
 		appendInd.add(actual);
-		list.remove(list.get(0));
+		sourceList.remove(sourceList.get(0));
 		
-		if(list.size()==0)
+		if(sourceList.size()==0)
 			return;
 		
-		List<DefaultBox> inner = getInnerIndividuals(actual, list);
-		List<DefaultBox> outer = getOuterIndividuals( actual , list);
+		List<DefaultBox> inner = getInnerIndividuals(actual, sourceList);
+		List<DefaultBox> outer = getOuterIndividuals( actual , sourceList);
 		
 		
 		if(inner.size()>0)
@@ -209,13 +194,13 @@ public class BigdataPage extends DefaultPage {
 	 * it returns innner individuals from individualBuffer that are inside the individual
 	 * @return
 	 */
-	private List<DefaultBox> getInnerIndividuals(DefaultBox individual, List<DefaultBox> list) {
+	private List<DefaultBox> getInnerIndividuals(DefaultBox individual, List<DefaultBox> sourceList) {
 		List<DefaultBox> listNested = new ArrayList<DefaultBox>();
 		
-		System.out.println("je zaklad Inner height:"+individual.getHeight()+ " width:"+individual.getWidth()+" x"+individual.getX1()+" y1"+individual.getY1()+" x2:"+individual.getX2()+" y2"+individual.getY2() );
-		for(DefaultBox ind: list) {
+		//System.out.println("je zaklad Inner height:"+individual.getHeight()+ " width:"+individual.getWidth()+" x"+individual.getX1()+" y1"+individual.getY1()+" x2:"+individual.getX2()+" y2"+individual.getY2() );
+		for(DefaultBox ind: sourceList) {
 			if(isNested(individual, ind)) {
-				System.out.println("je Inner height:"+ind.getHeight()+ " width:"+ind.getWidth()+" x"+ind.getX1()+" y1"+ind.getY1()+" x2"+ind.getX2()+" y2"+ind.getY2() );
+				//System.out.println("je Inner height:"+ind.getHeight()+ " width:"+ind.getWidth()+" x"+ind.getX1()+" y1"+ind.getY1()+" x2"+ind.getX2()+" y2"+ind.getY2() );
 				listNested.add(ind);
 			}
 		}
@@ -229,10 +214,10 @@ public class BigdataPage extends DefaultPage {
 	 * @param individual
 	 * @return
 	 */
-	private List<DefaultBox> getOuterIndividuals(DefaultBox individual, List<DefaultBox> list) {
+	private List<DefaultBox> getOuterIndividuals(DefaultBox individual, List<DefaultBox> sourceList) {
 		List<DefaultBox> listNested = new ArrayList<DefaultBox>();
 		
-		for(DefaultBox ind: list) {
+		for(DefaultBox ind: sourceList) {
 			if(!isNested(individual, ind)) {
 				listNested.add(ind);
 			}

@@ -63,8 +63,8 @@ public class BigDataTesting {
 	public static void main(String[] args) throws QueryEvaluationException {
 
 		//String urlString = "http://www.fit.vutbr.cz";
-		//String urlString = "http://cssbox.sourceforge.net/";
-		String urlString = "http://www.mws.cz/";
+		String urlString = "http://cssbox.sourceforge.net/";
+		//String urlString = "http://www.mws.cz/";
 		
 		BigdataInterface bdi = null;
 		
@@ -88,30 +88,26 @@ public class BigDataTesting {
             Page page = build.getPage();
             
             
-			//it inserts openRDF graph into database
-            bdi = new BigdataInterface();
+			//example 1 - it inserts openRDF graph into database
+            bdi = new BigdataInterface("http://pcuifs2.fit.vutbr.cz:8080/bigdata/sparql",false);
 			bdi.insertPage( page );
 			
 			
-			List<String> listURL = bdi.getDistinctUrlPages();//bdi.getDistinctUrlPages();
-			
+			//example 2
+			List<String> listURL = bdi.getDistinctUrlPages();
 			for(String url : listURL) {
 				System.out.println("URL:"+url);
 			}
 			
 			
-			
+			//example 3
 			List<BigdataLaunch> listLaunch = bdi.getLaunchesForUrl(urlString);
 			
 			for(BigdataLaunch launchInfo : listLaunch) {
 				System.out.println("URL Launch:"+launchInfo.getDate());
 				
-				/*
-				Graph allLaunchStatements = bdi.get getGraphForLaunch(launchInfo.getDate());
-				page = new BigdataPage(allLaunchStatements, "http://www.test.cz" );
-				*/
 				Model launch = bdi.getModelForLaunch(launchInfo.getDate());
-				page = new BigdataPage(launch, "http://www.test.cz" );
+				page = new BigdataPage(launch, urlString );
 			}
 			
 			

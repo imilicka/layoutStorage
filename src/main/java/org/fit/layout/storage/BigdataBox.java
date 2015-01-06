@@ -25,14 +25,19 @@ public class BigdataBox extends DefaultBox implements Box {
 	Integer y = null;
 	
 	
+	
 	/**
 	 * creates box element from the given attribute triples
 	 * 
 	 * @param attributes
 	 * @return
+	 * 
+	 * @deprecated uses old approach of document representation
 	 */
+	@Deprecated 
 	public BigdataBox(Iterator<Statement> attributes) {
 		
+		setText(""); //there must be set text due to cssbox segmentation
 		
 		//goes over all statements and sets attributes
 		while(attributes.hasNext()) {
@@ -44,10 +49,17 @@ public class BigdataBox extends DefaultBox implements Box {
 			//setContentBounds(new Rectangular(x, y, x+width, y+height));
 			setVisualBounds(new Rectangular(x, y, x+width, y+height));
 		}
+		
 	}
 	
+	/**
+	 * it builds CSSBox BOX representation from the given RDF statements
+	 * @param attributes
+	 */
 	public BigdataBox(Model attributes) {
 		
+		//there must be set default text
+		setText(""); 
 		
 		//goes over all statements and sets attributes
 		for(Statement attribute : attributes ) {
@@ -63,73 +75,74 @@ public class BigdataBox extends DefaultBox implements Box {
 	
 	
 	public void setAttribute(Statement attribute) {
+		
 		switch(attribute.getPredicate().toString()) {
 		
-		case BoxOnt.backgroundColor:
-			
-			String bgColor = attribute.getObject().stringValue();
-			//bgColor = bgColor.substring(1,bgColor.length());
-			setBackgroundColor( hex2Rgb( bgColor ) );
-			
-			break;
-		case BoxOnt.backgroundImagePosition:
-			break;
-		case BoxOnt.backgroundImageUrl:
-			break;
-		case BoxOnt.color:
-			
-			String color = attribute.getObject().stringValue();
-			//color = color.substring(1, color.length());
-			setColor(hex2Rgb(color));
-			
-			break;
-		case BoxOnt.fontDecoration:
-			setUnderline(Float.parseFloat( attribute.getObject().stringValue() ));
-			break;
-		case BoxOnt.fontFamily:
-			setFontFamily(attribute.getObject().stringValue());
-			break;
-		case BoxOnt.fontSize:
-			setFontSize(Float.parseFloat( attribute.getObject().stringValue() ));
-			break;
-		case BoxOnt.fontStyle:
-			setFontStyle(Float.parseFloat( attribute.getObject().stringValue() ));
-			break;
-		case BoxOnt.fontWeight:
-			setFontWeight(Float.parseFloat( attribute.getObject().stringValue() ));
-			break;
-		case BoxOnt.hasBottomBorder:
-			setBottomBorder(Integer.parseInt( attribute.getObject().stringValue() ));
-			break;
-		case BoxOnt.hasLeftBorder:
-			setLeftBorder(Integer.parseInt( attribute.getObject().stringValue() ));
-			break;
-		case BoxOnt.hasRightBorder:
-			setRightBorder(Integer.parseInt( attribute.getObject().stringValue() ));
-			break;
-		case BoxOnt.hasTopBorder:
-			setTopBorder(Integer.parseInt( attribute.getObject().stringValue() ));
-			break;
-		case BoxOnt.hasTag:
-			setTagName(attribute.getObject().stringValue());
-			break;
-		case BoxOnt.hasText:
-			setType(Type.TEXT_CONTENT);
-			setText(attribute.getObject().stringValue());
-			break;
-		case BoxOnt.height:
-			height = Integer.parseInt( attribute.getObject().stringValue() );
-			break;
-		case BoxOnt.width:
-			width = Integer.parseInt( attribute.getObject().stringValue() );
-			break;
-		case BoxOnt.positionX:
-			x = Integer.parseInt( attribute.getObject().stringValue() );
-			break;	
-		case BoxOnt.positionY:
-			y = Integer.parseInt( attribute.getObject().stringValue() );
-			break;		
-	}
+			case BoxOnt.backgroundColor:
+				
+				String bgColor = attribute.getObject().stringValue();
+				//bgColor = bgColor.substring(1,bgColor.length());
+				setBackgroundColor( hex2Rgb( bgColor ) );
+				
+				break;
+			case BoxOnt.backgroundImagePosition:
+				break;
+			case BoxOnt.backgroundImageUrl:
+				break;
+			case BoxOnt.color:
+				
+				String color = attribute.getObject().stringValue();
+				//color = color.substring(1, color.length());
+				setColor(hex2Rgb(color));
+				
+				break;
+			case BoxOnt.fontDecoration:
+				setUnderline(Float.parseFloat( attribute.getObject().stringValue() ));
+				break;
+			case BoxOnt.fontFamily:
+				setFontFamily(attribute.getObject().stringValue());
+				break;
+			case BoxOnt.fontSize:
+				setFontSize(Float.parseFloat( attribute.getObject().stringValue() ));
+				break;
+			case BoxOnt.fontStyle:
+				setFontStyle(Float.parseFloat( attribute.getObject().stringValue() ));
+				break;
+			case BoxOnt.fontWeight:
+				setFontWeight(Float.parseFloat( attribute.getObject().stringValue() ));
+				break;
+			case BoxOnt.hasBottomBorder:
+				setBottomBorder(Integer.parseInt( attribute.getObject().stringValue() ));
+				break;
+			case BoxOnt.hasLeftBorder:
+				setLeftBorder(Integer.parseInt( attribute.getObject().stringValue() ));
+				break;
+			case BoxOnt.hasRightBorder:
+				setRightBorder(Integer.parseInt( attribute.getObject().stringValue() ));
+				break;
+			case BoxOnt.hasTopBorder:
+				setTopBorder(Integer.parseInt( attribute.getObject().stringValue() ));
+				break;
+			case BoxOnt.hasTag:
+				setTagName(attribute.getObject().stringValue());
+				break;
+			case BoxOnt.hasText:
+				setType(Type.TEXT_CONTENT);
+				setText(attribute.getObject().stringValue());
+				break;
+			case BoxOnt.height:
+				height = Integer.parseInt( attribute.getObject().stringValue() );
+				break;
+			case BoxOnt.width:
+				width = Integer.parseInt( attribute.getObject().stringValue() );
+				break;
+			case BoxOnt.positionX:
+				x = Integer.parseInt( attribute.getObject().stringValue() );
+				break;	
+			case BoxOnt.positionY:
+				y = Integer.parseInt( attribute.getObject().stringValue() );
+				break;		
+		}
 	}  
 	
 	
