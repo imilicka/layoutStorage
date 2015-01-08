@@ -120,23 +120,7 @@ public class BigDataTesting {
 			e.printStackTrace();
 		}
 		
-		/*
-		try {
-
-			String uniqueID = urlString+"#20141207155202";
-			Graph allLaunchStatements = bdi.getIndividualForLaunch("20141207155202");
-			
-			//TODO modify constructor
-			Page p = new BigdataPage(allLaunchStatements, urlString);
-			
-			
-			
-    			
-        } catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
-		*/
+		
 	}
 
 }

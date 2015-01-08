@@ -19,19 +19,23 @@ import org.fit.layout.model.Box;
 import org.fit.layout.model.Page;
 import org.fit.layout.model.Tag;
 import org.fit.layout.storage.BigdataInterface;
+import org.fit.layout.storage.BigdataLaunch;
 import org.fit.layout.storage.BigdataPage;
 import org.fit.segm.grouping.AreaTree;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Model;
+import org.openrdf.repository.RepositoryException;
 
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 
 import java.awt.GridBagConstraints;
 
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -68,6 +72,9 @@ import java.awt.Font;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
+import javax.swing.DropMode;
+import javax.swing.JComboBox;
+
 /**
  * @author burgetr
  *
@@ -98,6 +105,9 @@ public class BlockBrowser
     private boolean dispFinished = false;
     private boolean areasync = true;
     private boolean logsync = true;
+    private String actualDBUrl;
+    BigdataInterface bdi = null;		//connector  to DB
+    
 
     private JFrame mainWindow = null;  //  @jve:decl-index=0:visual-constraint="-239,28"
     private JPanel mainPanel = null;
@@ -166,6 +176,18 @@ public class BlockBrowser
     private JButton evaluationButton;
     private JButton saveRDFButton;
     private JButton classesButton;
+    private JToolBar rdfDbToolBar;
+    private JPanel panel;
+    private JTextField urlRDFDBJTextField;
+    private JLabel lblRdfDb;
+    private JButton loadDBDataButton;
+    private JToolBar toolBar;
+    private JPanel panel_1;
+    private JLabel lblNewLabel;
+    private JComboBox<String> urlsComboBox;
+    private JLabel lblNewLabel_1;
+    private JComboBox<BigdataLaunch> launchesComboBox;
+    private JButton LoadModelButton;
 
     public BlockBrowser()
     {
@@ -260,72 +282,85 @@ public class BlockBrowser
                     refresh();
                 }
             };
-            //page = proc.renderPage(urlstring, contentScroll.getSize());
+            page = proc.renderPage(urlstring, contentScroll.getSize());
             
+            //showPage(page);
             
-            BigdataInterface bdi = new BigdataInterface("http://pcuifs2.fit.vutbr.cz:8080/bigdata/sparql",false);
-            Model modelStatements = bdi.getModelForLaunch("20141223093324");
+        }
+        catch(Exception exc) {
+        	exc.getStackTrace();
+        }
+            
+    }
+    
+    private void showPage(Page page) {
+	    	/*
+	        BigdataInterface bdi = new BigdataInterface("http://pcuifs2.fit.vutbr.cz:8080/bigdata/sparql",false);
+	        Model modelStatements = bdi.getModelForLaunch("20141223093324");
 			
 			//TODO modify constructor
 			page = new BigdataPage(modelStatements, "http://www.test.cz" );
-            
+	        */
+			
+		try {	
 			contentCanvas = createContentCanvas();
-            
-            contentCanvas.addMouseListener(new MouseListener() {
-                public void mouseClicked(MouseEvent e)
-                {
-                    System.out.println("Click: " + e.getX() + ":" + e.getY());
-                    canvasClick(e.getX(), e.getY());
-                }
-                public void mousePressed(MouseEvent e) { }
-                public void mouseReleased(MouseEvent e) { }
-                public void mouseEntered(MouseEvent e) { }
-                public void mouseExited(MouseEvent e) 
-                {
-                    statusText.setText("");
-                }
-            });
-            contentCanvas.addMouseMotionListener(new MouseMotionListener() {
-                public void mouseDragged(MouseEvent e) { }
-                public void mouseMoved(MouseEvent e) 
-                { 
-                    String s = "Absolute: " + e.getX() + ":" + e.getY();
-                    Area node = (Area) areaTree.getLastSelectedPathComponent();
-                    if (node != null)
-                    {
-                        Area area = (Area) node;
-                        int rx = e.getX() - area.getX1();
-                        int ry = e.getY() - area.getY1();
-                        s += "  Relative: " + rx + ":" + ry;
-                        /*if (area.getBounds().contains(e.getX(), e.getY()))
-                        {
-                            AreaGrid grid = area.getGrid();
-                            if (grid != null)
-                            {
-                                int gx = grid.findCellX(e.getX());
-                                int gy = grid.findCellY(e.getY());
-                                s += "  Grid: " + gx + ":" + gy;
-                            }
-                        }*/
-                    }
-                    statusText.setText(s);
-                }
-            });
-            contentScroll.setViewportView(contentCanvas);
-            
-            proc.segmentPage(page);
-
-            dispFinished = true;
-            saveButton.setEnabled(true);
-            saveLogicalButton.setEnabled(true);
-            saveRDFButton.setEnabled(true);
-            treeCompButton.setEnabled(true);
-            
-        } catch (Exception e) {
-            System.err.println("*** Error: "+e.getMessage());
-            e.printStackTrace();
-        }
+	        
+	        contentCanvas.addMouseListener(new MouseListener() {
+	            public void mouseClicked(MouseEvent e)
+	            {
+	                System.out.println("Click: " + e.getX() + ":" + e.getY());
+	                canvasClick(e.getX(), e.getY());
+	            }
+	            public void mousePressed(MouseEvent e) { }
+	            public void mouseReleased(MouseEvent e) { }
+	            public void mouseEntered(MouseEvent e) { }
+	            public void mouseExited(MouseEvent e) 
+	            {
+	                statusText.setText("");
+	            }
+	        });
+	        contentCanvas.addMouseMotionListener(new MouseMotionListener() {
+	            public void mouseDragged(MouseEvent e) { }
+	            public void mouseMoved(MouseEvent e) 
+	            { 
+	                String s = "Absolute: " + e.getX() + ":" + e.getY();
+	                Area node = (Area) areaTree.getLastSelectedPathComponent();
+	                if (node != null)
+	                {
+	                    Area area = (Area) node;
+	                    int rx = e.getX() - area.getX1();
+	                    int ry = e.getY() - area.getY1();
+	                    s += "  Relative: " + rx + ":" + ry;
+	                    /*if (area.getBounds().contains(e.getX(), e.getY()))
+	                    {
+	                        AreaGrid grid = area.getGrid();
+	                        if (grid != null)
+	                        {
+	                            int gx = grid.findCellX(e.getX());
+	                            int gy = grid.findCellY(e.getY());
+	                            s += "  Grid: " + gx + ":" + gy;
+	                        }
+	                    }*/
+	                }
+	                statusText.setText(s);
+	            }
+	        });
+	        contentScroll.setViewportView(contentCanvas);
+	        
+	        proc.segmentPage(page);
+	
+	        dispFinished = true;
+	        saveButton.setEnabled(true);
+	        saveLogicalButton.setEnabled(true);
+	        saveRDFButton.setEnabled(true);
+	        treeCompButton.setEnabled(true);
+	        
+	    } catch (Exception e) {
+	        System.err.println("*** Error: "+e.getMessage());
+	        e.printStackTrace();
+	    }
     }
+    
     
     /** Creates the appropriate canvas based on the file type */
     private JPanel createContentCanvas()
@@ -705,8 +740,9 @@ public class BlockBrowser
         if (mainPanel == null)
         {
             GridBagConstraints gridBagConstraints2 = new GridBagConstraints();
-            gridBagConstraints2.gridy = -1;
+            gridBagConstraints2.fill = GridBagConstraints.BOTH;
             gridBagConstraints2.anchor = GridBagConstraints.WEST;
+            gridBagConstraints2.gridy = 0;
             gridBagConstraints2.gridx = -1;
             GridBagConstraints gridBagConstraints11 = new GridBagConstraints();
             gridBagConstraints11.fill = java.awt.GridBagConstraints.BOTH;
@@ -751,17 +787,18 @@ public class BlockBrowser
             gridBagConstraints1.gridx = 1;
             GridBagConstraints gridBagConstraints7 = new GridBagConstraints();
             gridBagConstraints7.gridx = 3;
-            gridBagConstraints7.insets = new java.awt.Insets(4,0,5,7);
-            gridBagConstraints7.gridy = 1;
+            gridBagConstraints7.insets = new Insets(4, 0, 0, 7);
+            gridBagConstraints7.gridy = 2;
             GridBagConstraints gridBagConstraints6 = new GridBagConstraints();
+            gridBagConstraints6.gridx = 1;
             gridBagConstraints6.fill = java.awt.GridBagConstraints.HORIZONTAL;
-            gridBagConstraints6.gridy = 1;
+            gridBagConstraints6.gridy = 2;
             gridBagConstraints6.weightx = 1.0;
             gridBagConstraints6.insets = new java.awt.Insets(0,5,0,5);
             GridBagConstraints gridBagConstraints5 = new GridBagConstraints();
-            gridBagConstraints5.gridy = 1;
+            gridBagConstraints5.gridy = 2;
             gridBagConstraints5.anchor = java.awt.GridBagConstraints.CENTER;
-            gridBagConstraints5.insets = new java.awt.Insets(0,6,0,0);
+            gridBagConstraints5.insets = new Insets(0, 6, 0, 5);
             gridBagConstraints5.gridx = 0;
             jLabel = new JLabel();
             jLabel.setText("Location :");
@@ -1410,10 +1447,14 @@ public class BlockBrowser
     {
         if (toolPanel == null)
         {
-            FlowLayout flowLayout = new FlowLayout();
-            flowLayout.setAlignment(java.awt.FlowLayout.LEFT);
+            WrapLayout wrapLayout = new WrapLayout();
+            wrapLayout.setVgap(10);
+            wrapLayout.setHgap(0);
+            wrapLayout.setAlignment(java.awt.FlowLayout.LEFT);
             toolPanel = new JPanel();
-            toolPanel.setLayout(flowLayout);
+            toolPanel.setLayout(wrapLayout);
+            toolPanel.add(getToolBar_1());
+            toolPanel.add(getToolBar_2());
             toolPanel.add(getShowToolBar(), null);
             toolPanel.add(getLookupToolBar(), null);
             toolPanel.add(getFileToolBar(), null);
@@ -2191,4 +2232,229 @@ public class BlockBrowser
         
     }
 
+	private JToolBar getToolBar_1() {
+		if (rdfDbToolBar == null) {
+			rdfDbToolBar = new JToolBar();
+			rdfDbToolBar.setMaximumSize(new Dimension(18, 2));
+			rdfDbToolBar.setSize(new Dimension(230, 0));
+			rdfDbToolBar.setFloatable(false);
+			rdfDbToolBar.add(getPanel());
+		}
+		return rdfDbToolBar;
+	}
+	private JPanel getPanel() {
+		if (panel == null) {
+			panel = new JPanel();
+			panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+			panel.add(getLblRdfDb());
+			panel.add(getUrlRDFDBJTextField());
+			panel.add(getLoadDBDataButton());
+		}
+		return panel;
+	}
+	private JTextField getUrlRDFDBJTextField() {
+		if (urlRDFDBJTextField == null) {
+			urlRDFDBJTextField = new JTextField();
+			urlRDFDBJTextField.setMinimumSize(new Dimension(12, 20));
+			urlRDFDBJTextField.setHorizontalAlignment(SwingConstants.LEFT);
+			urlRDFDBJTextField.setText("http://localhost:8080/bigdata/sparql");
+			urlRDFDBJTextField.setColumns(30);
+		}
+		return urlRDFDBJTextField;
+	}
+	private JLabel getLblRdfDb() {
+		if (lblRdfDb == null) {
+			lblRdfDb = new JLabel("RDF DB");
+		}
+		return lblRdfDb;
+	}
+	private JButton getLoadDBDataButton() {
+		if (loadDBDataButton == null) {
+			loadDBDataButton = new JButton("Load Data");
+			loadDBDataButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					actualDBUrl = urlRDFDBJTextField.getText();
+					
+					
+					try {
+						bdi = new BigdataInterface(actualDBUrl, false);
+						
+						List<String> listURL = bdi.getDistinctUrlPages();
+						for(String url : listURL) {
+							urlsComboBox.addItem(url);
+						}
+					} 
+					catch (RepositoryException e) {
+
+						JOptionPane.showMessageDialog(mainWindow,
+							    "There is a problem with DB connection: "+e.getMessage(),
+							    "Connection Error",
+							    JOptionPane.ERROR_MESSAGE);
+						
+						e.printStackTrace();
+					}
+					
+				}
+			});
+		}
+		return loadDBDataButton;
+	}
+	
+	
+	private JToolBar getToolBar_2() {
+		if (toolBar == null) {
+			toolBar = new JToolBar();
+			toolBar.setFloatable(false);
+			toolBar.add(getPanel_1());
+		}
+		return toolBar;
+	}
+	private JPanel getPanel_1() {
+		if (panel_1 == null) {
+			panel_1 = new JPanel();
+			panel_1.add(getLblNewLabel());
+			panel_1.add(getUrlsComboBox());
+			panel_1.add(getLblNewLabel_1());
+			panel_1.add(getLaunchesComboBox());
+			panel_1.add(getLoadModelButton());
+		}
+		return panel_1;
+	}
+	private JLabel getLblNewLabel() {
+		if (lblNewLabel == null) {
+			lblNewLabel = new JLabel("URLs");
+		}
+		return lblNewLabel;
+	}
+	private JComboBox<String> getUrlsComboBox() {
+		if (urlsComboBox == null) {
+			urlsComboBox = new JComboBox<String>();
+			urlsComboBox.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					
+					if(launchesComboBox==null)
+			    		return;
+			    	
+					launchesComboBox.removeAllItems();
+			    	
+			    	if( urlsComboBox.getItemCount()>0 ) {
+			    		
+			    		launchesComboBox.setEnabled(true);
+			    		
+			    		List<BigdataLaunch> launchList = bdi.getLaunchesForUrl(urlsComboBox.getSelectedItem().toString() ); 
+			    		
+			    		
+			        	//fill combobox with launches
+			        	for(BigdataLaunch launch : launchList) {
+			        		launchesComboBox.addItem( launch );
+			        	}
+			    	}
+			    	else {
+			    		launchesComboBox.setEnabled(false);
+			    	}
+					
+				}
+			});
+		}
+		return urlsComboBox;
+	}
+	private JLabel getLblNewLabel_1() {
+		if (lblNewLabel_1 == null) {
+			lblNewLabel_1 = new JLabel("Launches");
+		}
+		return lblNewLabel_1;
+	}
+	private JComboBox<BigdataLaunch> getLaunchesComboBox() {
+		if (launchesComboBox == null) {
+			launchesComboBox = new JComboBox<BigdataLaunch>();
+			launchesComboBox.setRenderer(new DefaultListCellRenderer() {
+
+				private static final long serialVersionUID = 2525351383652612796L;
+
+					@Override 
+		            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+		                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+		                if(value instanceof BigdataLaunch){
+		                    BigdataLaunch launch = (BigdataLaunch) value;
+		                    setText(launch.getDate());
+		                } 
+		                return this;
+		            } 
+		    });
+			launchesComboBox.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					
+					if(launchesComboBox==null)
+			    		return;
+			    	
+			    	if( launchesComboBox.getItemCount()>0 ) {
+			    		LoadModelButton.setEnabled(true);
+			    	}
+			    	else {
+			    		LoadModelButton.setEnabled(false);
+			    	}
+					
+				}
+			});
+		}
+		return launchesComboBox;
+	}
+	private JButton getLoadModelButton() {
+		if (LoadModelButton == null) {
+			LoadModelButton = new JButton("Load Model");
+			LoadModelButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					
+					BigdataLaunch launch = (BigdataLaunch) launchesComboBox.getSelectedItem();
+	
+	
+			        try {
+			        	dispFinished = false;
+			            saveButton.setEnabled(false);
+			            saveLogicalButton.setEnabled(false);
+			            saveRDFButton.setEnabled(false);
+			            treeCompButton.setEnabled(false);
+			            if (treeCompWindow != null)
+			            {
+			                treeCompWindow.setVisible(false);
+			                treeCompWindow.dispose();
+			                treeCompWindow = null;
+			            }
+			            
+
+			                proc = new Processor() {
+			                    protected void treesCompleted()
+			                    {
+			                        refresh();
+			                    }
+			                };
+			        	
+			        	Model modelStatements = bdi.getModelForLaunch(launch.getDate().toString());
+						
+			        	
+			        	
+			        	
+						page = new BigdataPage(modelStatements, "http://www.test.cz" );
+						showPage(page);
+						
+					} catch (Exception e1) {
+						// TODO Auto-generated catch block
+						
+						JOptionPane.showMessageDialog(mainWindow,
+							    "Cannot load defined launch!",
+							    "Loading Error",
+							    JOptionPane.ERROR_MESSAGE);
+						e1.printStackTrace();
+					}
+					
+				}
+			});
+			LoadModelButton.setEnabled(false);
+		}
+		return LoadModelButton;
+	}
 }

@@ -75,21 +75,12 @@ public class BigdataInterface  {
         	 while (result.hasNext()) {
 			     Statement bindingSet = result.next();
 			     
-			     String url = bindingSet.getObject().toString();
+			     String url = bindingSet.getObject().stringValue();
 			     
 			     if(!output.contains(url)) {
 			   			output.add(url);
 			   	 }
 			 }
-		} catch (QueryEvaluationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (RepositoryException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (MalformedQueryException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
