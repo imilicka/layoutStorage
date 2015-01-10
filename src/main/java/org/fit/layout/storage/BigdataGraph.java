@@ -1,7 +1,9 @@
 package org.fit.layout.storage;
 
+import java.awt.Color;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+
 
 
 import org.fit.layout.model.Box;
@@ -40,8 +42,11 @@ public class BigdataGraph {
 		
 		inicializeGraph(page.getSourceURL().toString() );
 		
-		this.insertBox(page.getRoot());
-		insertAllBoxes(page.getRoot());
+		Box bdb = page.getRoot();
+		  this.insertBox(bdb);
+		  
+		  
+		insertAllBoxes(bdb);
 	}
 	
 	
@@ -108,6 +113,7 @@ public class BigdataGraph {
 		//in case of element with children
 		for (int i = 0; i < parent.getChildCount(); i++) {
 			Box sub1 = parent.getChildBox(i);
+			
 			this.insertBox(sub1);
 		}
 		
@@ -143,7 +149,8 @@ public class BigdataGraph {
 	    
 	    
 	    //store position and size of element
-	    Rectangular rec = box.getContentBounds();
+	    //Rectangular rec = box.getContentBounds();
+	    Rectangular rec = box.getBounds();
 	    graph.add( individual, new URIImpl(BoxOnt.height.toString()) , vf.createLiteral(rec.getHeight()) );
 	    graph.add( individual, new URIImpl(BoxOnt.width.toString()), vf.createLiteral(rec.getWidth()) );
 	    graph.add( individual, new URIImpl(BoxOnt.positionX.toString()), vf.createLiteral(rec.getX1()) );

@@ -66,6 +66,10 @@ public class BigdataBox extends DefaultBox implements Box {
 			setAttribute(attribute);
 		}
 		
+		if(height!=null)
+			System.out.println("Velikost height "+height);
+		
+		
 		if (height!=null && width!=null && x!=null && y!=null) {
 			setBounds(new Rectangular(x, y, x+width, y+height));
 			//setContentBounds(new Rectangular(x, y, x+width, y+height));

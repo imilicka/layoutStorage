@@ -6,6 +6,7 @@ package org.fit.layout.storage.example;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -188,6 +189,9 @@ public class BlockBrowser
     private JLabel lblNewLabel_1;
     private JComboBox<BigdataLaunch> launchesComboBox;
     private JButton LoadModelButton;
+    private JToolBar toolBar_1;
+    private JPanel panel_2;
+    private JButton btnSave;
 
     public BlockBrowser()
     {
@@ -250,7 +254,7 @@ public class BlockBrowser
         //boxTree.setModel(new BoxTreeModel(proc.getPage().getRoot()));
     	boxTree.setModel(new BoxTreeModel(page.getRoot()));
     	
-        //areaTree.setModel(new AreaTreeModel(proc.getAreaTree().getRoot()));
+        areaTree.setModel(new AreaTreeModel(proc.getAreaTree().getRoot()));
         //logicalTree.setModel(new DefaultTreeModel(proc.getLogicalTree().getRoot()));
     }
     
@@ -284,7 +288,7 @@ public class BlockBrowser
             };
             page = proc.renderPage(urlstring, contentScroll.getSize());
             
-            //showPage(page);
+            showPage(page);
             
         }
         catch(Exception exc) {
@@ -656,14 +660,17 @@ public class BlockBrowser
     @SuppressWarnings("unchecked")
     public void showAreas(Area node, String name)
     {
-        /*Enumeration<AreaNode> en = node.postorderEnumeration();
+    	/*
+        Enumeration<AreaNode> en = node.postorderEnumeration();
         while (en.hasMoreElements())
         {
             AreaNode child = en.nextElement();
             if (child.getArea() != null && (name == null || child.getArea().toString().contains(name)))
                 child.getArea().drawExtent((BrowserCanvas) contentCanvas);
         }
-        contentCanvas.repaint();*/
+        */
+        contentCanvas.repaint();
+        
     }
     
     public void colorizeTags(Area node)
@@ -740,11 +747,14 @@ public class BlockBrowser
         if (mainPanel == null)
         {
             GridBagConstraints gridBagConstraints2 = new GridBagConstraints();
+            gridBagConstraints2.insets = new Insets(0, 0, 5, 0);
             gridBagConstraints2.fill = GridBagConstraints.BOTH;
             gridBagConstraints2.anchor = GridBagConstraints.WEST;
             gridBagConstraints2.gridy = 0;
-            gridBagConstraints2.gridx = -1;
+            gridBagConstraints2.gridx = 0;
             GridBagConstraints gridBagConstraints11 = new GridBagConstraints();
+            gridBagConstraints11.insets = new Insets(0, 0, 5, 0);
+            gridBagConstraints11.gridy = 2;
             gridBagConstraints11.fill = java.awt.GridBagConstraints.BOTH;
             gridBagConstraints11.weighty = 1.0;
             gridBagConstraints11.gridx = 0;
@@ -756,6 +766,7 @@ public class BlockBrowser
             gridBagConstraints3.gridwidth = 1;
             gridBagConstraints3.gridy = 4;
             GridBagConstraints gridBagConstraints = new GridBagConstraints();
+            gridBagConstraints.insets = new Insets(0, 0, 5, 0);
             gridBagConstraints.gridx = 0;
             gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
             gridBagConstraints.weightx = 1.0;
@@ -1455,6 +1466,7 @@ public class BlockBrowser
             toolPanel.setLayout(wrapLayout);
             toolPanel.add(getToolBar_1());
             toolPanel.add(getToolBar_2());
+            toolPanel.add(getToolBar_1_1());
             toolPanel.add(getShowToolBar(), null);
             toolPanel.add(getLookupToolBar(), null);
             toolPanel.add(getFileToolBar(), null);
@@ -2270,7 +2282,7 @@ public class BlockBrowser
 	}
 	private JButton getLoadDBDataButton() {
 		if (loadDBDataButton == null) {
-			loadDBDataButton = new JButton("Load Data");
+			loadDBDataButton = new JButton("Establish Connection");
 			loadDBDataButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					actualDBUrl = urlRDFDBJTextField.getText();
@@ -2283,6 +2295,8 @@ public class BlockBrowser
 						for(String url : listURL) {
 							urlsComboBox.addItem(url);
 						}
+						
+						getBtnSave().setEnabled(true);
 					} 
 					catch (RepositoryException e) {
 
@@ -2456,5 +2470,41 @@ public class BlockBrowser
 			LoadModelButton.setEnabled(false);
 		}
 		return LoadModelButton;
+	}
+	private JToolBar getToolBar_1_1() {
+		if (toolBar_1 == null) {
+			toolBar_1 = new JToolBar();
+			toolBar_1.add(getPanel_2());
+		}
+		return toolBar_1;
+	}
+	private JPanel getPanel_2() {
+		if (panel_2 == null) {
+			panel_2 = new JPanel();
+			panel_2.add(getBtnSave());
+		}
+		return panel_2;
+	}
+	private JButton getBtnSave() {
+		if (btnSave == null) {
+			btnSave = new JButton("Save page To RDF DB");
+			btnSave.setEnabled(false);
+			btnSave.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					if(page!=null) {
+						bdi.insertPage(page);
+					}
+					else {
+						JOptionPane.showMessageDialog(mainWindow,
+							    "There is not loaded web page! You have to load some before saving it into RDF DB!",
+							    "Info",
+							    JOptionPane.ERROR_MESSAGE);
+					}
+						
+						
+				}
+			});
+		}
+		return btnSave;
 	}
 }

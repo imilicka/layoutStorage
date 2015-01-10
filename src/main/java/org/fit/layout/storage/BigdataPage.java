@@ -13,9 +13,11 @@ import org.fit.layout.impl.DefaultBox;
 import org.fit.layout.impl.DefaultPage;
 import org.fit.layout.model.Box;
 import org.fit.layout.model.Rectangular;
+import org.fit.layout.storage.ontology.BoxOnt;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
+import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.RDF;
 
 
@@ -90,8 +92,16 @@ public class BigdataPage extends DefaultPage {
 
 		try {
 			
+			for( Statement s: pageStatements.filter(null, new URIImpl(BoxOnt.height), null) ) {
+				System.out.println( s.getSubject().toString() + " height " + s.getObject().stringValue() );
+			}
+			
+			
 			for( Statement s: pageStatements.filter(null, RDF.TYPE, null) ) {
 				Model attributes = pageStatements.filter(s.getSubject(), null, null);
+				
+				
+				
 				allElements.add(new BigdataBox(attributes) ); 
 			}
 		}
@@ -135,6 +145,12 @@ public class BigdataPage extends DefaultPage {
 	 * @return list of individuals
 	 */
 	public static List<DefaultBox> sortBySize(List<DefaultBox> elements) {
+		
+		
+		for(DefaultBox box : elements){
+			//System.out.println("Velikost height "+box.getHeight());
+		}
+		
 		
 	    //list sorting
 	    Collections.sort(elements, new Comparator<DefaultBox>(){
