@@ -192,6 +192,7 @@ public class BlockBrowser
     private JToolBar toolBar_1;
     private JPanel panel_2;
     private JButton btnSave;
+    private JButton btnNewButton;
 
     public BlockBrowser()
     {
@@ -254,7 +255,7 @@ public class BlockBrowser
         //boxTree.setModel(new BoxTreeModel(proc.getPage().getRoot()));
     	boxTree.setModel(new BoxTreeModel(page.getRoot()));
     	
-        areaTree.setModel(new AreaTreeModel(proc.getAreaTree().getRoot()));
+		areaTree.setModel(new AreaTreeModel(proc.getAreaTree().getRoot()));
         //logicalTree.setModel(new DefaultTreeModel(proc.getLogicalTree().getRoot()));
     }
     
@@ -2285,33 +2286,41 @@ public class BlockBrowser
 			loadDBDataButton = new JButton("Establish Connection");
 			loadDBDataButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					actualDBUrl = urlRDFDBJTextField.getText();
-					
-					
-					try {
-						bdi = new BigdataInterface(actualDBUrl, false);
-						
-						List<String> listURL = bdi.getDistinctUrlPages();
-						for(String url : listURL) {
-							urlsComboBox.addItem(url);
-						}
-						
-						getBtnSave().setEnabled(true);
-					} 
-					catch (RepositoryException e) {
-
-						JOptionPane.showMessageDialog(mainWindow,
-							    "There is a problem with DB connection: "+e.getMessage(),
-							    "Connection Error",
-							    JOptionPane.ERROR_MESSAGE);
-						
-						e.printStackTrace();
-					}
-					
+					loadDistinctUrls();
 				}
 			});
 		}
 		return loadDBDataButton;
+	}
+	
+	
+	/**
+	 * it loads distinct URLs into ulrsComboBox
+	 */
+	private void loadDistinctUrls() {
+		actualDBUrl = urlRDFDBJTextField.getText();
+		
+		urlsComboBox.removeAllItems();
+		
+		try {
+			bdi = new BigdataInterface(actualDBUrl, false);
+			
+			List<String> listURL = bdi.getDistinctUrlPages();
+			for(String url : listURL) {
+				urlsComboBox.addItem(url);
+			}
+			
+			getBtnSave().setEnabled(true);
+		} 
+		catch (RepositoryException e) {
+
+			JOptionPane.showMessageDialog(mainWindow,
+				    "There is a problem with DB connection: "+e.getMessage(),
+				    "Connection Error",
+				    JOptionPane.ERROR_MESSAGE);
+			
+			e.printStackTrace();
+		}
 	}
 	
 	
@@ -2447,7 +2456,7 @@ public class BlockBrowser
 			                    }
 			                };
 			        	
-			        	Model modelStatements = bdi.getModelForLaunch(launch.getDate().toString());
+			        	Model modelStatements = bdi.getLaunchModel(launch.getDate().toString());
 						
 			        	
 			        	
@@ -2482,6 +2491,7 @@ public class BlockBrowser
 		if (panel_2 == null) {
 			panel_2 = new JPanel();
 			panel_2.add(getBtnSave());
+			panel_2.add(getBtnNewButton());
 		}
 		return panel_2;
 	}
@@ -2493,6 +2503,8 @@ public class BlockBrowser
 				public void actionPerformed(ActionEvent arg0) {
 					if(page!=null) {
 						bdi.insertPage(page);
+						
+						loadDistinctUrls();
 					}
 					else {
 						JOptionPane.showMessageDialog(mainWindow,
@@ -2506,5 +2518,34 @@ public class BlockBrowser
 			});
 		}
 		return btnSave;
+	}
+	private JButton getBtnNewButton() {
+		if (btnNewButton == null) {
+			btnNewButton = new JButton("Remove Model");
+			btnNewButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					String launchDate = "-";
+
+					try {
+						BigdataLaunch launch = (BigdataLaunch) launchesComboBox
+								.getSelectedItem();
+						launchDate = launch.getDate().toString();
+
+						bdi.removeLaunch(launchDate);
+						
+						loadDistinctUrls();
+					} catch (Exception e) {
+						e.printStackTrace();
+
+						JOptionPane.showMessageDialog(mainWindow,
+								"Cannot remove launch model for " + launchDate,
+								"ERROR", JOptionPane.ERROR_MESSAGE);
+					}
+						
+				}
+			});
+			
+		}
+		return btnNewButton;
 	}
 }

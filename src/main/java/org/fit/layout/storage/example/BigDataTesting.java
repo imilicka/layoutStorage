@@ -106,7 +106,7 @@ public class BigDataTesting {
 			for(BigdataLaunch launchInfo : listLaunch) {
 				System.out.println("URL Launch:"+launchInfo.getDate());
 				
-				Model launch = bdi.getModelForLaunch(launchInfo.getDate());
+				Model launch = bdi.getLaunchModel(launchInfo.getDate());
 				page = new BigdataPage(launch, urlString );
 			}
 			
