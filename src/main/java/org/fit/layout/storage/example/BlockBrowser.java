@@ -4,7 +4,9 @@
 package org.fit.layout.storage.example;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.List;
@@ -16,16 +18,22 @@ import org.fit.cssbox.layout.BrowserCanvas;
 import org.fit.cssbox.layout.BrowserConfig;
 import org.fit.layout.classify.FeatureVector;
 import org.fit.layout.model.Area;
+import org.fit.layout.model.AreaTree;
 import org.fit.layout.model.Box;
 import org.fit.layout.model.Page;
 import org.fit.layout.model.Tag;
 import org.fit.layout.storage.BigdataInterface;
-import org.fit.layout.storage.BigdataLaunch;
+import org.fit.layout.storage.BigdataLaunchInfo;
+import org.fit.layout.storage.BigdataModelBuilding;
 import org.fit.layout.storage.BigdataPage;
-import org.fit.segm.grouping.AreaTree;
+import org.fit.layout.storage.example.utils.WrapLayout;
+import org.fit.layout.tools.AreaTreeModel;
+import org.fit.layout.tools.BoxTreeModel;
+import org.fit.layout.tools.BrowserPanel;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Model;
 import org.openrdf.repository.RepositoryException;
+import org.xml.sax.SAXException;
 
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
@@ -187,12 +195,14 @@ public class BlockBrowser
     private JLabel lblNewLabel;
     private JComboBox<String> urlsComboBox;
     private JLabel lblNewLabel_1;
-    private JComboBox<BigdataLaunch> launchesComboBox;
+    private JComboBox<BigdataLaunchInfo> launchesComboBox;
     private JButton LoadModelButton;
     private JToolBar toolBar_1;
     private JPanel panel_2;
     private JButton btnSave;
-    private JButton btnNewButton;
+    private JButton btn_removeModel;
+    private JButton btn_testInsert;
+    private JButton btn_clearDB;
 
     public BlockBrowser()
     {
@@ -255,7 +265,7 @@ public class BlockBrowser
         //boxTree.setModel(new BoxTreeModel(proc.getPage().getRoot()));
     	boxTree.setModel(new BoxTreeModel(page.getRoot()));
     	
-		areaTree.setModel(new AreaTreeModel(proc.getAreaTree().getRoot()));
+		areaTree.setModel(new AreaTreeModel(proc.getAreaTree().getRoot() ));
         //logicalTree.setModel(new DefaultTreeModel(proc.getLogicalTree().getRoot()));
     }
     
@@ -299,13 +309,6 @@ public class BlockBrowser
     }
     
     private void showPage(Page page) {
-	    	/*
-	        BigdataInterface bdi = new BigdataInterface("http://pcuifs2.fit.vutbr.cz:8080/bigdata/sparql",false);
-	        Model modelStatements = bdi.getModelForLaunch("20141223093324");
-			
-			//TODO modify constructor
-			page = new BigdataPage(modelStatements, "http://www.test.cz" );
-	        */
 			
 		try {	
 			contentCanvas = createContentCanvas();
@@ -2294,6 +2297,9 @@ public class BlockBrowser
 	}
 	
 	
+	
+
+	
 	/**
 	 * it loads distinct URLs into ulrsComboBox
 	 */
@@ -2311,6 +2317,9 @@ public class BlockBrowser
 			}
 			
 			getBtnSave().setEnabled(true);
+			getBtn_removeModel().setEnabled(true);
+			getBtn_testInsert().setEnabled(true);
+			getBtn_clearDB().setEnabled(true);
 		} 
 		catch (RepositoryException e) {
 
@@ -2366,11 +2375,11 @@ public class BlockBrowser
 			    		
 			    		launchesComboBox.setEnabled(true);
 			    		
-			    		List<BigdataLaunch> launchList = bdi.getLaunchesForUrl(urlsComboBox.getSelectedItem().toString() ); 
+			    		List<BigdataLaunchInfo> launchList = bdi.getLaunchesForUrl(urlsComboBox.getSelectedItem().toString() ); 
 			    		
 			    		
 			        	//fill combobox with launches
-			        	for(BigdataLaunch launch : launchList) {
+			        	for(BigdataLaunchInfo launch : launchList) {
 			        		launchesComboBox.addItem( launch );
 			        	}
 			    	}
@@ -2389,9 +2398,9 @@ public class BlockBrowser
 		}
 		return lblNewLabel_1;
 	}
-	private JComboBox<BigdataLaunch> getLaunchesComboBox() {
+	private JComboBox<BigdataLaunchInfo> getLaunchesComboBox() {
 		if (launchesComboBox == null) {
-			launchesComboBox = new JComboBox<BigdataLaunch>();
+			launchesComboBox = new JComboBox<BigdataLaunchInfo>();
 			launchesComboBox.setRenderer(new DefaultListCellRenderer() {
 
 				private static final long serialVersionUID = 2525351383652612796L;
@@ -2399,8 +2408,8 @@ public class BlockBrowser
 					@Override 
 		            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 		                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-		                if(value instanceof BigdataLaunch){
-		                    BigdataLaunch launch = (BigdataLaunch) value;
+		                if(value instanceof BigdataLaunchInfo){
+		                    BigdataLaunchInfo launch = (BigdataLaunchInfo) value;
 		                    setText(launch.getDate());
 		                } 
 		                return this;
@@ -2432,7 +2441,7 @@ public class BlockBrowser
 			LoadModelButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					
-					BigdataLaunch launch = (BigdataLaunch) launchesComboBox.getSelectedItem();
+					BigdataLaunchInfo launch = (BigdataLaunchInfo) launchesComboBox.getSelectedItem();
 	
 	
 			        try {
@@ -2449,19 +2458,16 @@ public class BlockBrowser
 			            }
 			            
 
-			                proc = new Processor() {
-			                    protected void treesCompleted()
-			                    {
-			                        refresh();
-			                    }
-			                };
+		                proc = new Processor() {
+		                    protected void treesCompleted()
+		                    {
+		                        refresh();
+		                    }
+		                };
 			        	
 			        	Model modelStatements = bdi.getLaunchModel(launch.getDate().toString());
 						
-			        	
-			        	
-			        	
-						page = new BigdataPage(modelStatements, "http://www.test.cz" );
+						page = new BigdataPage(modelStatements, launch.getUrl() );
 						showPage(page);
 						
 					} catch (Exception e1) {
@@ -2491,7 +2497,9 @@ public class BlockBrowser
 		if (panel_2 == null) {
 			panel_2 = new JPanel();
 			panel_2.add(getBtnSave());
-			panel_2.add(getBtnNewButton());
+			panel_2.add(getBtn_removeModel());
+			panel_2.add(getBtn_testInsert());
+			panel_2.add(getBtn_clearDB());
 		}
 		return panel_2;
 	}
@@ -2501,8 +2509,10 @@ public class BlockBrowser
 			btnSave.setEnabled(false);
 			btnSave.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
+					
 					if(page!=null) {
 						bdi.insertPage(page);
+						bdi.insertAreaTree(proc.getAreaTree() , page.getSourceURL().toString() );
 						
 						loadDistinctUrls();
 					}
@@ -2512,22 +2522,21 @@ public class BlockBrowser
 							    "Info",
 							    JOptionPane.ERROR_MESSAGE);
 					}
-						
-						
 				}
 			});
 		}
 		return btnSave;
 	}
-	private JButton getBtnNewButton() {
-		if (btnNewButton == null) {
-			btnNewButton = new JButton("Remove Model");
-			btnNewButton.addActionListener(new ActionListener() {
+	private JButton getBtn_removeModel() {
+		if (btn_removeModel == null) {
+			btn_removeModel = new JButton("Remove Model");
+			btn_removeModel.setEnabled(false);
+			btn_removeModel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					String launchDate = "-";
 
 					try {
-						BigdataLaunch launch = (BigdataLaunch) launchesComboBox
+						BigdataLaunchInfo launch = (BigdataLaunchInfo) launchesComboBox
 								.getSelectedItem();
 						launchDate = launch.getDate().toString();
 
@@ -2546,6 +2555,108 @@ public class BlockBrowser
 			});
 			
 		}
-		return btnNewButton;
+		return btn_removeModel;
+	}
+	
+	
+	
+	private JButton getBtn_testInsert() {
+		if (btn_testInsert == null) {
+			btn_testInsert = new JButton("Test Insert");
+			btn_testInsert.setEnabled(false);
+			btn_testInsert.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					
+					
+					groupInsert();
+					
+				}
+			});
+		}
+		return btn_testInsert;
+	}
+	
+	
+	private void groupInsert() {
+		
+		String[] pages = new String[] { "http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
+				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk"
+				};
+		
+		int celkem = pages.length;
+		int i = 0;
+		
+		for(String urlstring: pages) {
+			try {
+
+				//proc = null;
+				//System.gc();
+				proc = new Processor() {
+	                protected void treesCompleted()
+	                {
+	                    refresh();
+	                }
+	            };
+				
+				page = proc.renderPage(urlstring, contentScroll.getSize());
+			} catch (IOException | SAXException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			//displayURL(urlstring);
+			bdi.insertPage(page);
+
+			System.out.println(i++ +" z "+celkem);
+		}
+		
+		bdi.insertPage(page);
+	}
+	private JButton getBtn_clearDB() {
+		if (btn_clearDB == null) {
+			btn_clearDB = new JButton("Clear DB");
+			btn_clearDB.setEnabled(false);
+			btn_clearDB.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					bdi.clearRDFDatabase();
+					loadDistinctUrls();
+				}
+			});
+		}
+		return btn_clearDB;
 	}
 }

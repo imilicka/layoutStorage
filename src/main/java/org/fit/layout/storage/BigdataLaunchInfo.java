@@ -12,14 +12,14 @@ import org.openrdf.query.QueryEvaluationException;
  * @author milicka
  *
  */
-public class BigdataLaunch {
+public class BigdataLaunchInfo {
 
 	private String date;
 	private String id;
 	private String url;
 	
 	
-	public BigdataLaunch(GraphQueryResult statements) throws QueryEvaluationException {
+	public BigdataLaunchInfo(GraphQueryResult statements) throws QueryEvaluationException {
 		
 		
 		while(statements.hasNext() ) {

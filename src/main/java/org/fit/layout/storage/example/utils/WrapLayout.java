@@ -1,4 +1,4 @@
-package org.fit.layout.storage.example;
+package org.fit.layout.storage.example.utils;
 
 import java.awt.*;
 import javax.swing.JScrollPane;
@@ -6,6 +6,7 @@ import javax.swing.SwingUtilities;
 
 /**
  *  FlowLayout subclass that fully supports wrapping of components.
+ *  
  */
 public class WrapLayout extends FlowLayout
 {

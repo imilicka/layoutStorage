@@ -60,6 +60,13 @@
       <version>0.0.1-SNAPSHOT</version>
       <scope>compile</scope>
     </dependency>
+		 
+	<dependency>
+		<groupId>cz.vutbr.fit.layout</groupId>
+		<artifactId>layout-tools</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+		<scope>LayoutTools</scope>
+	</dependency>	 
 		 	
   </dependencies>
 

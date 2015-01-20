@@ -104,5 +104,4 @@ public class BoxOnt {
     public static final String Element = "http://www.mws.cz/render.owl#Element";
     
     
-    
 }

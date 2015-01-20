@@ -3,6 +3,9 @@ package org.fit.layout.storage;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.fit.layout.impl.DefaultArea;
+import org.fit.layout.model.Area;
+import org.fit.layout.model.AreaTree;
 import org.fit.layout.model.Page;
 import org.fit.layout.storage.ontology.BoxOnt;
 import org.openrdf.model.Graph;
@@ -20,6 +23,8 @@ import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.Update;
+import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
@@ -32,6 +37,7 @@ public class BigdataInterface {
 	BigdataConnector bddb;
 	Boolean lbs = false;
 	String url = "http://localhost:8080/bigdata/sparql";
+	URIImpl lastLaunchNode;
 
 	public BigdataInterface() throws RepositoryException {
 		bddb = new BigdataConnector(this.url, this.lbs);
@@ -127,16 +133,16 @@ public class BigdataInterface {
 		return output;
 	}
 
-	private BigdataLaunch getLaunchInfo(String launchId) {
+	private BigdataLaunchInfo getLaunchInfo(String launchId) {
 
-		BigdataLaunch bdl = null;
+		BigdataLaunchInfo bdl = null;
 
 		try {
 			URIImpl launchSubject = new URIImpl(launchId);
 			GraphQueryResult results = bddb.repo.getRemoteRepository()
 					.getStatements(launchSubject, null, null, true); 
 
-			bdl = new BigdataLaunch(results);
+			bdl = new BigdataLaunchInfo(results);
 		} catch (QueryEvaluationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -148,14 +154,14 @@ public class BigdataInterface {
 		return bdl;
 	}
 
-	public List<BigdataLaunch> getLaunchesForUrl(String url) {
+	public List<BigdataLaunchInfo> getLaunchesForUrl(String url) {
 
 		List<String> ids = getLauncheIds(url);
-		List<BigdataLaunch> launches = new ArrayList<BigdataLaunch>();
+		List<BigdataLaunchInfo> launches = new ArrayList<BigdataLaunchInfo>();
 
 		for (String id : ids) {
 
-			BigdataLaunch bdl = getLaunchInfo(id);
+			BigdataLaunchInfo bdl = getLaunchInfo(id);
 
 			if (bdl != null)
 				launches.add(bdl);
@@ -170,14 +176,28 @@ public class BigdataInterface {
 	 * @param page
 	 */
 	public void insertPage(Page page) {
-
+		
 		// creates graph representation of RDF triples
-		BigdataGraph pgb = new BigdataGraph(page);
+		BigdataLaunchModel pgb = new BigdataLaunchModel(page);
 
 		// stores graph of triples into DB
 		insertGraph(pgb.getGraph());
+		
+		this.lastLaunchNode = pgb.getLaunchNode();
 	}
 
+	public void appendAreaTreeToLaunchNode(AreaTree atree, URIImpl launch, String url) {
+		
+		BigdataModelBuilding buildingModel = new BigdataModelBuilding(atree, launch, url);
+		insertGraph(buildingModel.getGraph());
+	}
+	
+	public void insertAreaTree(AreaTree atree, String url) {
+		
+		appendAreaTreeToLaunchNode(atree, getLastLaunchNode(), url);
+	}
+	
+	
 	/**
 	 * it removes launch
 	 * 
@@ -351,7 +371,6 @@ public class BigdataInterface {
 			throws QueryEvaluationException {
 
 		try {
-
 			org.openrdf.query.TupleQuery tq = bddb.repo.getConnection()
 					.prepareTupleQuery(QueryLanguage.SPARQL, query);
 			return tq.evaluate();
@@ -364,5 +383,23 @@ public class BigdataInterface {
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	
+	public void clearRDFDatabase() {
+		
+		try {
+			Update upd = bddb.repo.getConnection().prepareUpdate(QueryLanguage.SPARQL, "DELETE WHERE { ?s ?p ?o }");
+			upd.execute();
+			
+		} catch (MalformedQueryException | RepositoryException | UpdateExecutionException e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	
+	public URIImpl getLastLaunchNode() {
+		return this.lastLaunchNode;
 	}
 }

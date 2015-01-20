@@ -12,7 +12,7 @@ import org.openrdf.model.Statement;
 
 
 /**
- * Box representation with RDF attributes initialization
+ * Box representation created from RDF statements
  * 
  * @author milicka
  *

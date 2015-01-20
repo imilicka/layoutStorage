@@ -10,7 +10,7 @@ import java.util.List;
 import org.fit.layout.cssbox.CSSBoxTreeBuilder;
 import org.fit.layout.model.Page;
 import org.fit.layout.storage.BigdataInterface;
-import org.fit.layout.storage.BigdataLaunch;
+import org.fit.layout.storage.BigdataLaunchInfo;
 import org.fit.layout.storage.BigdataPage;
 import org.fit.layout.storage.ontology.BoxOnt;
 import org.openrdf.model.Graph;
@@ -62,7 +62,6 @@ public class BigDataTesting {
 
 	public static void main(String[] args) throws QueryEvaluationException {
 
-		//String urlString = "http://www.fit.vutbr.cz";
 		String urlString = "http://cssbox.sourceforge.net/";
 		//String urlString = "http://www.mws.cz/";
 		
@@ -101,9 +100,9 @@ public class BigDataTesting {
 			
 			
 			//example 3
-			List<BigdataLaunch> listLaunch = bdi.getLaunchesForUrl(urlString);
+			List<BigdataLaunchInfo> listLaunch = bdi.getLaunchesForUrl(urlString);
 			
-			for(BigdataLaunch launchInfo : listLaunch) {
+			for(BigdataLaunchInfo launchInfo : listLaunch) {
 				System.out.println("URL Launch:"+launchInfo.getDate());
 				
 				Model launch = bdi.getLaunchModel(launchInfo.getDate());
