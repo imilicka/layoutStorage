@@ -27,12 +27,10 @@ import org.fit.layout.storage.BigdataLaunchInfo;
 import org.fit.layout.storage.BigdataModelBuilding;
 import org.fit.layout.storage.BigdataPage;
 import org.fit.layout.storage.example.utils.WrapLayout;
-import org.fit.layout.tools.AreaTreeModel;
-import org.fit.layout.tools.BoxTreeModel;
-import org.fit.layout.tools.BrowserPanel;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Model;
 import org.openrdf.repository.RepositoryException;
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import javax.swing.JSplitPane;
@@ -88,9 +86,9 @@ import javax.swing.JComboBox;
  * @author burgetr
  *
  */
-public class BlockBrowser
+public class BlockBrowserExcluded
 {
-    public static BlockBrowser browser;
+    public static BlockBrowserExcluded browser;
 
     public static final double TAG_PROBABILITY_THRESHOLD = 0.5; 
     
@@ -204,7 +202,7 @@ public class BlockBrowser
     private JButton btn_testInsert;
     private JButton btn_clearDB;
 
-    public BlockBrowser()
+    public BlockBrowserExcluded()
     {
         config = new BrowserConfig();
         saveDir = new File("/home/burgetr/local/rdf");
@@ -299,7 +297,20 @@ public class BlockBrowser
             };
             page = proc.renderPage(urlstring, contentScroll.getSize());
             
+            
+            System.out.println("NodeName "+ page.getRoot().getTagName() );
+            for(int i = 0; i<page.getRoot().getChildCount();i++) {
+            	
+            	Box b  = page.getRoot(). getChildBox(i);
+            	System.out.println("NodeName "+ b.getTagName() );
+            	for(int j = 0; j<b.getChildCount();j++) {
+            		System.out.println("NodeName 1 "+ b.getChildBox(j).getTagName() );	
+            	}
+            }
+            
+            
             showPage(page);
+            
             
         }
         catch(Exception exc) {
@@ -2178,7 +2189,7 @@ public class BlockBrowser
      */
     public static void main(String[] args)
     {
-        browser = new BlockBrowser();
+        browser = new BlockBrowserExcluded();
         browser.setLoadImages(false);
         JFrame main = browser.getMainWindow();
         //main.setSize(1000,600);
