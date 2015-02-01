@@ -7,13 +7,12 @@ package org.fit.layout.storage.gui;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Vector;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
@@ -21,244 +20,188 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 
+import org.fit.layout.api.AreaTreeOperator;
+import org.fit.layout.classify.FeatureAnalyzer;
+import org.fit.layout.classify.VisualClassifier;
+import org.fit.layout.classify.op.TagEntitiesOperator;
+import org.fit.layout.classify.op.VisualClassificationOperator;
 import org.fit.layout.gui.Browser;
 import org.fit.layout.gui.BrowserPlugin;
-import org.fit.layout.model.Area;
 import org.fit.layout.model.Page;
 import org.fit.layout.model.Tag;
 import org.fit.layout.storage.BigdataInterface;
 import org.fit.layout.storage.BigdataLaunchInfo;
 import org.fit.layout.storage.BigdataPage;
-import org.fit.layout.storage.example.Processor;
+import org.fit.segm.grouping.SegmentationAreaTree;
+import org.fit.segm.grouping.op.FindLineOperator;
+import org.fit.segm.grouping.op.HomogeneousLeafOperator;
 import org.openrdf.model.Model;
 import org.openrdf.repository.RepositoryException;
-import org.xml.sax.SAXException;
+
 
 /**
  * 
- * @author burgetr
+ * @author imilicka
  */
 public class StoragePlugin implements BrowserPlugin
 {
     private Browser browser;
     BigdataInterface bdi = null;	
-
     
-    private JToolBar rdfDbToolBar;
-    private JPanel panel;
-    private JTextField urlRDFDBJTextField;
-    private JLabel lblRdfDb;
-    private JButton loadDBDataButton;
-    private JToolBar toolBar;
-    private JPanel panel_1;
-    private JLabel lblNewLabel;
-    private JComboBox<String> urlsComboBox;
-    private JLabel lblNewLabel_1;
-    private JComboBox<BigdataLaunchInfo> launchesComboBox;
-    private JButton LoadModelButton;
-    private JToolBar toolBar_1;
-    private JPanel panel_2;
-    private JButton btnSave;
+    private JToolBar tbr_connection;
+    private JTextField tfl_urlRDFDB;
+    private JLabel lbl_rdfDb;
+    private JButton btn_loadDBData;
+    private JToolBar tbr_storageSelection;
+    private JLabel lbl_urls;
+    private JComboBox<String> cbx_urls;
+    private JLabel lbl_launches;
+    private JComboBox<BigdataLaunchInfo> cbx_launches;
+    private JButton btn_loadModel;
+    private JToolBar tbr_control;
+    private JButton btn_saveModel;
     private JButton btn_removeModel;
-    private JButton btn_testInsert;
     private JButton btn_clearDB;
 
-    private JTabbedPane sidebarPane;
     
+	//=============================
     
     @Override
     public boolean init(Browser browser)
     {
         this.browser = browser;
-        this.browser.addToolBar(getRdfDbToolBar());
-        this.browser.addToolBar(getToolBar_2());
-        this.browser.addToolBar(getToolBar_1_1() );
-        
-        
-        
-        this.browser.addStructurePanel("pokus", getSidebarPane());
-        
-        
-        
+        this.browser.addToolBar(getTbr_connection());
+        this.browser.addToolBar(getTbr_storageSelection());
+        this.browser.addToolBar(getTbr_control() );
         return true;
     }
     
-    //=================================================================
-    private JToolBar getRdfDbToolBar() {
-		if (rdfDbToolBar == null) {
-			rdfDbToolBar = new JToolBar();
-			rdfDbToolBar.setMaximumSize(new Dimension(18, 2));
-			rdfDbToolBar.setSize(new Dimension(230, 0));
-			rdfDbToolBar.setFloatable(false);
-			rdfDbToolBar.add(getPanel());
+    
+    //Connection panel=================================================================
+    
+    private JToolBar getTbr_connection() 
+    {
+		if (tbr_connection == null) {
+			tbr_connection = new JToolBar();
+			tbr_connection.add(getLbl_RdfDb());
+			tbr_connection.add(getTfl_urlRDFDB());
+			tbr_connection.add(getBtn_loadDBData());
+			
 		}
-		return rdfDbToolBar;
+		return tbr_connection;
 	}
-	private JPanel getPanel() {
-		if (panel == null) {
-			panel = new JPanel();
-			panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-			panel.add(getLblRdfDb());
-			panel.add(getUrlRDFDBJTextField());
-			panel.add(getLoadDBDataButton());
+	
+    private JTextField getTfl_urlRDFDB() 
+    {
+		if (tfl_urlRDFDB == null) {
+			tfl_urlRDFDB = new JTextField();
+			tfl_urlRDFDB.setMinimumSize(new Dimension(12, 20));
+			tfl_urlRDFDB.setHorizontalAlignment(SwingConstants.LEFT);
+			tfl_urlRDFDB.setText("http://localhost:8080/bigdata/sparql");
+			tfl_urlRDFDB.setColumns(30);
 		}
-		return panel;
+		return tfl_urlRDFDB;
 	}
-	private JTextField getUrlRDFDBJTextField() {
-		if (urlRDFDBJTextField == null) {
-			urlRDFDBJTextField = new JTextField();
-			urlRDFDBJTextField.setMinimumSize(new Dimension(12, 20));
-			urlRDFDBJTextField.setHorizontalAlignment(SwingConstants.LEFT);
-			urlRDFDBJTextField.setText("http://localhost:8080/bigdata/sparql");
-			urlRDFDBJTextField.setColumns(30);
+	
+	private JLabel getLbl_RdfDb() 
+	{
+		if (lbl_rdfDb == null) {
+			lbl_rdfDb = new JLabel("RDF DB");
 		}
-		return urlRDFDBJTextField;
+		return lbl_rdfDb;
 	}
-	private JLabel getLblRdfDb() {
-		if (lblRdfDb == null) {
-			lblRdfDb = new JLabel("RDF DB");
-		}
-		return lblRdfDb;
-	}
-	private JButton getLoadDBDataButton() {
-		if (loadDBDataButton == null) {
-			loadDBDataButton = new JButton("Establish Connection");
-			loadDBDataButton.addActionListener(new ActionListener() {
+	
+	private JButton getBtn_loadDBData() 
+	{
+		if (btn_loadDBData == null) {
+			btn_loadDBData = new JButton("Establish Connection");
+			btn_loadDBData.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					loadDistinctUrls();
 				}
 			});
 		}
-		return loadDBDataButton;
+		return btn_loadDBData;
 	}
 	
 	
-	private JTabbedPane getSidebarPane()
-    {
-        if (sidebarPane == null)
-        {
-            sidebarPane = new JTabbedPane();
-            /*
-            sidebarPane.addTab("Area tree", null, getJPanel(), null);
-            sidebarPane.addTab("Logical tree", null, getJPanel4(), null);
-            sidebarPane.addTab("Box tree", null, getBoxTreePanel(), null);
-            sidebarPane.addTab("Separators", null, getJPanel2(), null);
-            sidebarPane.addTab("Paths", null, getPathsPanel(), null);*/ 
-        }
-        return sidebarPane;
-    }
-
+	//Selection panel =============================
 	
-	/**
-	 * it loads distinct URLs into ulrsComboBox
-	 */
-	private void loadDistinctUrls() {
-		String DBConnectionUrl = urlRDFDBJTextField.getText();
-		
-		urlsComboBox.removeAllItems();
-		
-		try {
-			bdi = new BigdataInterface(DBConnectionUrl, false);
+	private JToolBar getTbr_storageSelection() 
+	{
+		if (tbr_storageSelection == null) {
+			tbr_storageSelection = new JToolBar();
+			tbr_storageSelection.add(getLbl_urls());
+			tbr_storageSelection.add(getCbx_urls());
+			tbr_storageSelection.add(getLbl_launches());
+			tbr_storageSelection.add(getCbx_launches());
+			tbr_storageSelection.add(getBtn_loadModel());
 			
-			List<String> listURL = bdi.getDistinctUrlPages();
-			for(String url : listURL) {
-				urlsComboBox.addItem(url);
-			}
-			
-			getBtnSave().setEnabled(true);
-			getBtn_removeModel().setEnabled(true);
-			getBtn_testInsert().setEnabled(true);
-			getBtn_clearDB().setEnabled(true);
-		} 
-		catch (RepositoryException e) {
-
-			/*
-			JOptionPane.showMessageDialog(this,
-				    "There is a problem with DB connection: "+e.getMessage(),
-				    "Connection Error",
-				    JOptionPane.ERROR_MESSAGE);
-			*/
-			
-			e.printStackTrace();
 		}
+		return tbr_storageSelection;
 	}
 	
+	private JLabel getLbl_urls() 
+	{
+		if (lbl_urls == null) {
+			lbl_urls = new JLabel("URLs");
+		}
+		return lbl_urls;
+	}
 	
-	private JToolBar getToolBar_2() {
-		if (toolBar == null) {
-			toolBar = new JToolBar();
-			toolBar.setFloatable(false);
-			toolBar.add(getPanel_1());
-		}
-		return toolBar;
-	}
-	private JPanel getPanel_1() {
-		if (panel_1 == null) {
-			panel_1 = new JPanel();
-			panel_1.add(getLblNewLabel());
-			panel_1.add(getUrlsComboBox());
-			panel_1.add(getLblNewLabel_1());
-			panel_1.add(getLaunchesComboBox());
-			panel_1.add(getLoadModelButton());
-		}
-		return panel_1;
-	}
-	private JLabel getLblNewLabel() {
-		if (lblNewLabel == null) {
-			lblNewLabel = new JLabel("URLs");
-		}
-		return lblNewLabel;
-	}
-	private JComboBox<String> getUrlsComboBox() {
-		if (urlsComboBox == null) {
-			urlsComboBox = new JComboBox<String>();
-			urlsComboBox.addActionListener(new ActionListener() {
+	private JComboBox<String> getCbx_urls() 
+	{
+		if (cbx_urls == null) {
+			cbx_urls = new JComboBox<String>();
+			cbx_urls.addActionListener(new ActionListener() {
 				
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					
-					if(launchesComboBox==null)
+					if(cbx_launches==null)
 			    		return;
 			    	
-					launchesComboBox.removeAllItems();
+					cbx_launches.removeAllItems();
 			    	
-			    	if( urlsComboBox.getItemCount()>0 ) {
+			    	if( cbx_urls.getItemCount()>0 ) {
 			    		
-			    		launchesComboBox.setEnabled(true);
+			    		cbx_launches.setEnabled(true);
 			    		
-			    		List<BigdataLaunchInfo> launchList = bdi.getLaunchesForUrl(urlsComboBox.getSelectedItem().toString() ); 
+			    		List<BigdataLaunchInfo> launchList = bdi.getLaunchesForUrl(cbx_urls.getSelectedItem().toString() ); 
 			    		
 			    		
 			        	//fill combobox with launches
 			        	for(BigdataLaunchInfo launch : launchList) {
-			        		launchesComboBox.addItem( launch );
+			        		cbx_launches.addItem( launch );
 			        	}
 			    	}
 			    	else {
-			    		launchesComboBox.setEnabled(false);
+			    		cbx_launches.setEnabled(false);
 			    	}
 					
 				}
 			});
 		}
-		return urlsComboBox;
+		return cbx_urls;
 	}
-	private JLabel getLblNewLabel_1() {
-		if (lblNewLabel_1 == null) {
-			lblNewLabel_1 = new JLabel("Launches");
+	
+	private JLabel getLbl_launches() 
+	{
+		if (lbl_launches == null) {
+			lbl_launches = new JLabel("Launches");
 		}
-		return lblNewLabel_1;
+		return lbl_launches;
 	}
-	private JComboBox<BigdataLaunchInfo> getLaunchesComboBox() {
-		if (launchesComboBox == null) {
-			launchesComboBox = new JComboBox<BigdataLaunchInfo>();
-			launchesComboBox.setRenderer(new DefaultListCellRenderer() {
+	
+	private JComboBox<BigdataLaunchInfo> getCbx_launches() 
+	{
+		if (cbx_launches == null) {
+			cbx_launches = new JComboBox<BigdataLaunchInfo>();
+			cbx_launches.setRenderer(new DefaultListCellRenderer() {
 
 				private static final long serialVersionUID = 2525351383652612796L;
 
@@ -272,33 +215,35 @@ public class StoragePlugin implements BrowserPlugin
 		                return this;
 		            } 
 		    });
-			launchesComboBox.addActionListener(new ActionListener() {
+			cbx_launches.addActionListener(new ActionListener() {
 				
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					
-					if(launchesComboBox==null)
+					if(cbx_launches==null)
 			    		return;
 			    	
-			    	if( launchesComboBox.getItemCount()>0 ) {
-			    		LoadModelButton.setEnabled(true);
+			    	if( cbx_launches.getItemCount()>0 ) {
+			    		btn_loadModel.setEnabled(true);
 			    	}
 			    	else {
-			    		LoadModelButton.setEnabled(false);
+			    		btn_loadModel.setEnabled(false);
 			    	}
 					
 				}
 			});
 		}
-		return launchesComboBox;
+		return cbx_launches;
 	}
-	private JButton getLoadModelButton() {
-		if (LoadModelButton == null) {
-			LoadModelButton = new JButton("Load Model");
-			LoadModelButton.addActionListener(new ActionListener() {
+	
+	private JButton getBtn_loadModel() 
+	{
+		if (btn_loadModel == null) {
+			btn_loadModel = new JButton("Load Model");
+			btn_loadModel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					
-					BigdataLaunchInfo launch = (BigdataLaunchInfo) launchesComboBox.getSelectedItem();
+					BigdataLaunchInfo launch = (BigdataLaunchInfo) cbx_launches.getSelectedItem();
 	
 	
 			        try {
@@ -307,6 +252,9 @@ public class StoragePlugin implements BrowserPlugin
 						
 						Page page = new BigdataPage(modelStatements, launch.getUrl() );
 						browser.setPage(page);
+						
+						segmentPage(page);
+						
 						
 					} catch (Exception e1) {
 						
@@ -321,32 +269,63 @@ public class StoragePlugin implements BrowserPlugin
 					
 				}
 			});
-			LoadModelButton.setEnabled(false);
+			btn_loadModel.setEnabled(false);
 		}
-		return LoadModelButton;
+		return btn_loadModel;
 	}
-	private JToolBar getToolBar_1_1() {
-		if (toolBar_1 == null) {
-			toolBar_1 = new JToolBar();
-			toolBar_1.add(getPanel_2());
+	
+	/**
+	 * it loads distinct URLs into ulrsComboBox
+	 */
+	private void loadDistinctUrls() 
+	{
+		String DBConnectionUrl = tfl_urlRDFDB.getText();
+		
+		cbx_urls.removeAllItems();
+		
+		try {
+			bdi = new BigdataInterface(DBConnectionUrl, false);
+			
+			List<String> listURL = bdi.getDistinctUrlPages();
+			for(String url : listURL) {
+				cbx_urls.addItem(url);
+			}
+			
+			getBtn_saveModel().setEnabled(true);
+			getBtn_removeModel().setEnabled(true);
+			getBtn_clearDB().setEnabled(true);
+		} 
+		catch (RepositoryException e) {
+
+			JOptionPane.showMessageDialog((Component) browser,
+				    "There is a problem with DB connection: "+e.getMessage(),
+				    "Connection Error",
+				    JOptionPane.ERROR_MESSAGE);
 		}
-		return toolBar_1;
 	}
-	private JPanel getPanel_2() {
-		if (panel_2 == null) {
-			panel_2 = new JPanel();
-			panel_2.add(getBtnSave());
-			panel_2.add(getBtn_removeModel());
-			panel_2.add(getBtn_testInsert());
-			panel_2.add(getBtn_clearDB());
+	
+	
+	//Control panel =============================
+	
+	//Control panel =============================
+	
+	private JToolBar getTbr_control() 
+	{
+		if (tbr_control == null) {
+			tbr_control = new JToolBar();
+			tbr_control.add(getBtn_saveModel());
+			tbr_control.add(getBtn_removeModel());
+			tbr_control.add(getBtn_clearDB());
 		}
-		return panel_2;
+		return tbr_control;
 	}
-	private JButton getBtnSave() {
-		if (btnSave == null) {
-			btnSave = new JButton("Save page To RDF DB");
-			btnSave.setEnabled(false);
-			btnSave.addActionListener(new ActionListener() {
+	
+	private JButton getBtn_saveModel() 
+	{
+		if (btn_saveModel == null) {
+			btn_saveModel = new JButton("Save page to DB");
+			btn_saveModel.setEnabled(false);
+			btn_saveModel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					
 					Page page = browser.getPage();
@@ -369,9 +348,11 @@ public class StoragePlugin implements BrowserPlugin
 				}
 			});
 		}
-		return btnSave;
+		return btn_saveModel;
 	}
-	private JButton getBtn_removeModel() {
+	
+	private JButton getBtn_removeModel() 
+	{
 		if (btn_removeModel == null) {
 			btn_removeModel = new JButton("Remove Model");
 			btn_removeModel.setEnabled(false);
@@ -380,7 +361,7 @@ public class StoragePlugin implements BrowserPlugin
 					String launchDate = "-";
 
 					try {
-						BigdataLaunchInfo launch = (BigdataLaunchInfo) launchesComboBox
+						BigdataLaunchInfo launch = (BigdataLaunchInfo) cbx_launches
 								.getSelectedItem();
 						launchDate = launch.getDate().toString();
 
@@ -404,85 +385,8 @@ public class StoragePlugin implements BrowserPlugin
 		return btn_removeModel;
 	}
 	
-	
-	
-	private JButton getBtn_testInsert() {
-		if (btn_testInsert == null) {
-			btn_testInsert = new JButton("Download links");
-			btn_testInsert.setEnabled(false);
-			btn_testInsert.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent arg0) {
-					
-					
-					
-					
-					
-					//groupInsert();
-					
-				}
-			});
-		}
-		return btn_testInsert;
-	}
-	
-	
-	private void groupInsert() {
-	/*	
-		String[] pages = new String[] { "http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk",
-				"http://www.fit.vutbr.cz", "http://www.idnes.cz", "http://www.google.com", "http://www.aktualne.cz","http://www.centrum.cz","http://www.atlas.cz","http://www.seznam.cz","http://www.bbc.co.uk"
-				};
-		
-		int celkem = pages.length;
-		int i = 0;
-		
-		for(String urlstring: pages) {
-						//displayURL(urlstring);
-			browser.setPage(page);
-			bdi.insertPage(page);
-
-			System.out.println(i++ +" z "+celkem);
-		}
-		
-		bdi.insertPage(page);
-		*/
-	}
-	
-	private JButton getBtn_clearDB() {
+	private JButton getBtn_clearDB() 
+	{
 		if (btn_clearDB == null) {
 			btn_clearDB = new JButton("Clear DB");
 			btn_clearDB.setEnabled(false);
@@ -496,7 +400,65 @@ public class StoragePlugin implements BrowserPlugin
 		return btn_clearDB;
 	}
     
-    //=================================================================
-    
-    
+	
+	
+	public void segmentPage(Page page)
+    {
+		
+		System.out.println("toto je moje segmentation");
+		
+        //area tree
+		SegmentationAreaTree atree = new SegmentationAreaTree(page);
+        atree.findBasicAreas();
+        
+        //apply the area tree operations
+        Vector<AreaTreeOperator> operations = new Vector<AreaTreeOperator>();
+        operations.add(new FindLineOperator(false, 1.5f));
+        operations.add(new HomogeneousLeafOperator());
+        ////operations.add(new FindColumnsOperator());
+        //operations.add(new SuperAreaOperator(2)); //TODO misto pass limit by se hodilo nejake omezeni granularity na zaklade vlastnosti oblasti
+        ////operations.add(new CollapseAreasOperator());
+        //operations.add(new ReorderOperator());
+        
+        System.out.println("OPERATORS");
+        for (AreaTreeOperator op : operations)
+        {
+            System.out.println(op.toString());
+            op.apply(atree);
+        }
+        
+        //tagging
+        AreaTreeOperator tagop = new TagEntitiesOperator();
+        tagop.apply(atree);
+       
+        /*//visual features
+        features = new FeatureAnalyzer(atree.getRoot());
+        //if (weights != null)
+        //    features.setWeights(weights);
+        
+        //visual classification
+        vcls = new VisualClassifier("train_mix.arff", 1);
+        //vcls = new VisualClassifier("train_reuters2.arff", 1);
+        vcls.classifyTree(atree.getRoot(), features);*/
+        
+        VisualClassificationOperator vcop = new VisualClassificationOperator("train_mix.arff", 1);
+        vcop.apply(atree);
+        FeatureAnalyzer features = vcop.getFeatures();
+        VisualClassifier vcls = vcop.getVisualClassifier();
+        
+        Set<Tag> tags = atree.getUsedTags();
+        showAllTags(tags);
+        
+        System.out.println("DONE");
+        
+    }
+	
+	private void showAllTags(Set<Tag> tags) {
+		Iterator<Tag> it = tags.iterator();
+        while(it.hasNext()) {
+        	Tag t = it.next();
+        	System.out.println( t.getValue() );
+        	
+        }
+	}
 }

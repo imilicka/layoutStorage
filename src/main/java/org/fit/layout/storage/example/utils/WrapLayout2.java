@@ -8,15 +8,19 @@ import javax.swing.SwingUtilities;
  *  FlowLayout subclass that fully supports wrapping of components.
  *  
  */
-public class WrapLayout extends FlowLayout
+public class WrapLayout2 extends FlowLayout
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private Dimension preferredLayoutSize;
 
 	/**
 	* Constructs a new <code>WrapLayout</code> with a left
 	* alignment and a default 5-unit horizontal and vertical gap.
 	*/
-	public WrapLayout()
+	public WrapLayout2()
 	{
 		super();
 	}
@@ -29,7 +33,7 @@ public class WrapLayout extends FlowLayout
 	* or <code>WrapLayout</code>.
 	* @param align the alignment value
 	*/
-	public WrapLayout(int align)
+	public WrapLayout2(int align)
 	{
 		super(align);
 	}
@@ -45,7 +49,7 @@ public class WrapLayout extends FlowLayout
 	* @param hgap the horizontal gap between components
 	* @param vgap the vertical gap between components
 	*/
-	public WrapLayout(int align, int hgap, int vgap)
+	public WrapLayout2(int align, int hgap, int vgap)
 	{
 		super(align, hgap, vgap);
 	}

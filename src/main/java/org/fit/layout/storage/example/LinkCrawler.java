@@ -116,6 +116,14 @@ public class LinkCrawler {
 		LINK_LIMIT = newLimit;
 	}
 
+	/**
+	 * Gets list of crawled urls
+	 * @return
+	 */
+	public List<String> getUrls() {
+		return crawled;
+	}
+	
 	// =============================================================================================================
 
 	/**
