@@ -2,12 +2,10 @@ package org.fit.layout.storage;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.fit.layout.impl.DefaultArea;
 import org.fit.layout.model.Area;
 import org.fit.layout.model.AreaTree;
 import org.fit.layout.model.Rectangular;
@@ -120,7 +118,6 @@ public class BigdataModelBuilding {
 		// area.getFontWeight(); 
 		//area.getUnderline();
 		
-
 	}
 
 	private String getUniqueId() {

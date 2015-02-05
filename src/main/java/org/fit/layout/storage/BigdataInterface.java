@@ -3,8 +3,6 @@ package org.fit.layout.storage;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.fit.layout.impl.DefaultArea;
-import org.fit.layout.model.Area;
 import org.fit.layout.model.AreaTree;
 import org.fit.layout.model.Page;
 import org.fit.layout.storage.ontology.BoxOnt;
@@ -18,7 +16,6 @@ import org.openrdf.model.Value;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
@@ -31,13 +28,13 @@ import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 
 import com.bigdata.rdf.sail.webapp.client.IPreparedGraphQuery;
-import com.bigdata.rdf.sail.webapp.client.RemoteRepository;
+
 
 public class BigdataInterface {
 
 	BigdataConnector bddb;
 	Boolean lbs = false;
-	String url = "http://localhost:8080/bigdata/training/sparql";
+	String url = "http://localhost:8080/bigdata/sparql";
 	URIImpl lastLaunchNode;
 
 	public BigdataInterface() throws RepositoryException {

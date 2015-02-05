@@ -1,9 +1,7 @@
  
  
 import org.fit.layout.storage.example.LinkCrawler;
-import org.junit.Before;
 import org.junit.Test; 
-import org.junit.Ignore; 
  
 /** 
  * Tests for {@link Foo}. 

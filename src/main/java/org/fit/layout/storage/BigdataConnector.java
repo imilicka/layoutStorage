@@ -1,16 +1,6 @@
 package org.fit.layout.storage;
 
 
-
-
-import java.util.Properties;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import org.apache.http.client.HttpClient;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
@@ -26,17 +16,8 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
-import org.openrdf.repository.config.RepositoryConfigException;
-import org.openrdf.repository.manager.RemoteRepositoryManager;
-import org.openrdf.repository.manager.RepositoryManager;
-import org.openrdf.sail.SailException;
 
-import com.bigdata.rdf.sail.BigdataSail;
-import com.bigdata.rdf.sail.BigdataSailFactory;
-import com.bigdata.rdf.sail.BigdataSailRepository;
 import com.bigdata.rdf.sail.remote.BigdataSailRemoteRepository;
-import com.bigdata.rdf.sail.webapp.client.DefaultClientConnectionManagerFactory;
-import com.bigdata.rdf.sail.webapp.client.RemoteRepository;
 
 
 public class BigdataConnector {
@@ -154,7 +135,10 @@ public class BigdataConnector {
 		}
 	}
 
-
+	/**
+	 * in BigData 1.4 it is unimplemented function
+	 * @param newNamespace
+	 */
 	public void addNamespace(String newNamespace) {
 		
 	/*	
@@ -174,7 +158,7 @@ public class BigdataConnector {
 		}
 	*/
 		
-		
+		/*
 		ClientConnectionManager m_cm = DefaultClientConnectionManagerFactory.getInstance().newInstance();;
 		final DefaultHttpClient httpClient = new DefaultHttpClient(m_cm);
 
@@ -191,7 +175,7 @@ public class BigdataConnector {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+		*/
 		
 	}
 	

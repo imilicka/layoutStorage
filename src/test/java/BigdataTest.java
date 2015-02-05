@@ -1,10 +1,7 @@
  
  
-import org.fit.layout.storage.BigdataConnector;
 import org.fit.layout.storage.BigdataInterface;
-import org.junit.Before;
 import org.junit.Test; 
-import org.junit.Ignore; 
 import org.openrdf.model.Namespace;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
@@ -52,7 +49,7 @@ public class BigdataTest {
 				BigdataInterface bdi = new BigdataInterface();
 				RepositoryResult<Namespace> namespaces = bdi.getAllNamespaces();
 				
-				System.out.println ( "pocet NS:" + namespaces.asList().size() );
+				//System.out.println ( "pocet NS:" + namespaces. asList().size() );
 				
 				
 				System.out.println("no problem");

@@ -1,6 +1,5 @@
 package org.fit.layout.storage;
 
-import java.awt.Color;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -11,13 +10,9 @@ import java.util.List;
 
 import org.fit.layout.impl.DefaultBox;
 import org.fit.layout.impl.DefaultPage;
-import org.fit.layout.model.Box;
-import org.fit.layout.model.Rectangular;
-import org.fit.layout.storage.ontology.BoxOnt;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
-import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.RDF;
 
 public class BigdataPage extends DefaultPage {
@@ -135,10 +130,6 @@ public class BigdataPage extends DefaultPage {
 	 */
 	public static List<DefaultBox> sortBySize(List<DefaultBox> elements) {
 
-		for (DefaultBox box : elements) {
-			// System.out.println("Velikost height "+box.getHeight());
-		}
-
 		// list sorting
 		Collections.sort(elements, new Comparator<DefaultBox>() {
 			public int compare(DefaultBox one, DefaultBox two) {
@@ -152,7 +143,7 @@ public class BigdataPage extends DefaultPage {
 		});
 
 		List<DefaultBox> dlb = new ArrayList<>();
-		int i = 0;
+
 		for (DefaultBox db : elements) {
 
 			dlb.add(db);

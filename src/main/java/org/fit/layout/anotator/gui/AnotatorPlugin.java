@@ -194,10 +194,10 @@ public class AnotatorPlugin implements BrowserPlugin {
 			{
 				public void actionPerformed(ActionEvent arg0) 
 				{
-					for(int i=tagModelTable.getColumnCount(); i>=0; i--) 
+					for(int i=tagModelTable.getRowCount(); i>0; i--) 
 					{
-						String tag = (String)tagModelTable.getValueAt(i, 0);
-						DefaultArea area = (DefaultArea)tagModelTable.getValueAt(i, 1);
+						String tag = (String)tagModelTable.getValueAt(i-1, 0);
+						DefaultArea area = (DefaultArea)tagModelTable.getValueAt(i-1, 1);
 						removeTag(area, new AnotatorTag(tag));
 					}
 						
