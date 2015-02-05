@@ -44,5 +44,6 @@ public class LinkCrawlerTest {
     	downloader.start();
     	org.junit.Assert.assertTrue(downloader.size()==0);
     } 
+  
     
 } 

@@ -10,6 +10,7 @@ import org.fit.layout.model.Page;
 import org.fit.layout.storage.ontology.BoxOnt;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Model;
+import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -36,7 +37,7 @@ public class BigdataInterface {
 
 	BigdataConnector bddb;
 	Boolean lbs = false;
-	String url = "http://localhost:8080/bigdata/sparql";
+	String url = "http://localhost:8080/bigdata/training/sparql";
 	URIImpl lastLaunchNode;
 
 	public BigdataInterface() throws RepositoryException {
@@ -52,7 +53,15 @@ public class BigdataInterface {
 	public RepositoryConnection getConnection() {
 		return this.bddb.getConnection();
 	}
+	
+	public void addNamespace(String newNamespace) {
+		bddb.addNamespace(newNamespace);
+	}
 
+	public RepositoryResult<Namespace> getAllNamespaces() throws RepositoryException {
+		return bddb.getAllNamespaces();
+	}
+	
 	/**
 	 * it returns a list of distinct url pages from the database
 	 */
@@ -82,76 +91,6 @@ public class BigdataInterface {
 
 		return output;
 
-	}
-
-	/**
-	 * method gives a list of launches for the specific url
-	 * 
-	 * @param url
-	 *            it defines url of processed site
-	 * @return list of specific launches
-	 */
-	private List<String> getLauncheIds(String url) {
-		List<String> output = new ArrayList<String>();
-
-		try {
-			// request for all launches of the specific url
-			URIImpl sourceUrlPredicate = new URIImpl(
-					BoxOnt.sourceUrl.toString());
-			ValueFactoryImpl vf = ValueFactoryImpl.getInstance(); // constructor
-																	// for the
-																	// value
-																	// creation
-			GraphQueryResult result = bddb.repo.getRemoteRepository()
-					.getStatements(null, sourceUrlPredicate,
-							vf.createLiteral(url), true); // .getStatements(null,
-															// sourceUrlPredicate,
-															// vf.createLiteral(url),
-															// true);
-
-			// stores all launches into list of string
-			while (result.hasNext()) {
-
-				Statement row = result.next();
-				String launch = row.getSubject().toString();
-
-				if (!output.contains(launch))
-					output.add(launch);
-			}
-
-		} catch (RepositoryException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (QueryEvaluationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		return output;
-	}
-
-	private BigdataLaunchInfo getLaunchInfo(String launchId) {
-
-		BigdataLaunchInfo bdl = null;
-
-		try {
-			URIImpl launchSubject = new URIImpl(launchId);
-			GraphQueryResult results = bddb.repo.getRemoteRepository()
-					.getStatements(launchSubject, null, null, true); 
-
-			bdl = new BigdataLaunchInfo(results);
-		} catch (QueryEvaluationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		return bdl;
 	}
 
 	public List<BigdataLaunchInfo> getLaunchesForUrl(String url) {
@@ -197,7 +136,6 @@ public class BigdataInterface {
 		appendAreaTreeToLaunchNode(atree, getLastLaunchNode(), url);
 	}
 	
-	
 	/**
 	 * it removes launch
 	 * 
@@ -207,43 +145,6 @@ public class BigdataInterface {
 
 		removeLaunchModel(launchId);
 		removeLaunchInfo(launchId);
-
-	}
-
-	/**
-	 * it removes all launch nodes
-	 * 
-	 * @param launchDatetime
-	 */
-	private void removeLaunchModel(String launchDatetime) {
-
-		Model m;
-		try {
-			m = getLaunchModel(launchDatetime);
-			bddb.getConnection().remove(m);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
-
-	/**
-	 * it removes launch info
-	 * 
-	 * @param launchId
-	 */
-	private void removeLaunchInfo(String launchId) {
-		
-		try {
-			Model m = getLaunchInfoModel(launchId);
-			
-			bddb.getConnection().remove(m);
-
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 
 	}
 
@@ -335,19 +236,6 @@ public class BigdataInterface {
 		return convertGraphQueryResult2Model(gqr);
 	}
 
-	
-	private Model convertGraphQueryResult2Model(GraphQueryResult gqr) throws QueryEvaluationException {
-		
-		// create a new Model to put statements in
-		Model model = new LinkedHashModel();
-
-		while (gqr.hasNext()) {
-			model.add(gqr.next());
-		}
-
-		return model;
-	}
-	
 	/**
 	 * it returns all statements for the specific subject
 	 * 
@@ -402,4 +290,129 @@ public class BigdataInterface {
 	public URIImpl getLastLaunchNode() {
 		return this.lastLaunchNode;
 	}
+
+	
+	
+	
+	//=========================================
+	
+	/**
+	 * it removes all launch nodes
+	 * 
+	 * @param launchDatetime
+	 */
+	private void removeLaunchModel(String launchDatetime) {
+
+		Model m;
+		try {
+			m = getLaunchModel(launchDatetime);
+			bddb.getConnection().remove(m);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	/**
+	 * it removes launch info
+	 * 
+	 * @param launchId
+	 */
+	private void removeLaunchInfo(String launchId) {
+		
+		try {
+			Model m = getLaunchInfoModel(launchId);
+			
+			bddb.getConnection().remove(m);
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+	
+	private Model convertGraphQueryResult2Model(GraphQueryResult gqr) throws QueryEvaluationException {
+		
+		// create a new Model to put statements in
+		Model model = new LinkedHashModel();
+
+		while (gqr.hasNext()) {
+			model.add(gqr.next());
+		}
+
+		return model;
+	}
+
+	/**
+	 * method gives a list of launches for the specific url
+	 * 
+	 * @param url
+	 *            it defines url of processed site
+	 * @return list of specific launches
+	 */
+	private List<String> getLauncheIds(String url) {
+		List<String> output = new ArrayList<String>();
+
+		try {
+			// request for all launches of the specific url
+			URIImpl sourceUrlPredicate = new URIImpl(
+					BoxOnt.sourceUrl.toString());
+			ValueFactoryImpl vf = ValueFactoryImpl.getInstance(); // constructor
+																	// for the
+																	// value
+																	// creation
+			GraphQueryResult result = bddb.repo.getRemoteRepository()
+					.getStatements(null, sourceUrlPredicate,
+							vf.createLiteral(url), true); // .getStatements(null,
+															// sourceUrlPredicate,
+															// vf.createLiteral(url),
+															// true);
+
+			// stores all launches into list of string
+			while (result.hasNext()) {
+
+				Statement row = result.next();
+				String launch = row.getSubject().toString();
+
+				if (!output.contains(launch))
+					output.add(launch);
+			}
+
+		} catch (RepositoryException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (QueryEvaluationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return output;
+	}
+
+	private BigdataLaunchInfo getLaunchInfo(String launchId) {
+
+		BigdataLaunchInfo bdl = null;
+
+		try {
+			URIImpl launchSubject = new URIImpl(launchId);
+			GraphQueryResult results = bddb.repo.getRemoteRepository()
+					.getStatements(launchSubject, null, null, true); 
+
+			bdl = new BigdataLaunchInfo(results);
+		} catch (QueryEvaluationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return bdl;
+	}
+
 }

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JList;
@@ -31,6 +32,7 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
+
 import org.fit.layout.api.AreaTreeOperator;
 import org.fit.layout.classify.FeatureAnalyzer;
 import org.fit.layout.classify.VisualClassifier;
@@ -75,7 +77,6 @@ public class MultiPageAnalyzerPlugin implements BrowserPlugin {
 	/**
 	 * @wbp.parser.entryPoint
 	 */
-	@Override
 	public boolean init(Browser browser) {
 		this.browser = browser;
 		this.browser.addToolBar(getTbr_control());
@@ -132,7 +133,7 @@ public class MultiPageAnalyzerPlugin implements BrowserPlugin {
 							&& !urlstring.startsWith("file:"))
 						urlstring = "http://" + urlstring;
 
-					int urlLimit = (int)getTfl_pageLimit().getValue();
+					int urlLimit = (Integer) getTfl_pageLimit().getValue();
 					
 					List<String> urls = getCrawledUrlsFor(urlstring, urlLimit);
 					

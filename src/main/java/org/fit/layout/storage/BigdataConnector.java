@@ -3,7 +3,16 @@ package org.fit.layout.storage;
 
 
 
+import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import org.apache.http.client.HttpClient;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.openrdf.model.Graph;
+import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -16,8 +25,18 @@ import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.RepositoryResult;
+import org.openrdf.repository.config.RepositoryConfigException;
+import org.openrdf.repository.manager.RemoteRepositoryManager;
+import org.openrdf.repository.manager.RepositoryManager;
+import org.openrdf.sail.SailException;
 
+import com.bigdata.rdf.sail.BigdataSail;
+import com.bigdata.rdf.sail.BigdataSailFactory;
+import com.bigdata.rdf.sail.BigdataSailRepository;
 import com.bigdata.rdf.sail.remote.BigdataSailRemoteRepository;
+import com.bigdata.rdf.sail.webapp.client.DefaultClientConnectionManagerFactory;
+import com.bigdata.rdf.sail.webapp.client.RemoteRepository;
 
 
 public class BigdataConnector {
@@ -61,6 +80,16 @@ public class BigdataConnector {
 	{
 		this.repo = new BigdataSailRemoteRepository(this.endpointUrl, this.lbs);
 		this.connection = repo.getConnection();
+	
+		/*	
+			try {
+				BigdataSail bds = new BigdataSail();
+				bds.getConnection().getNamespaces();
+			} catch (SailException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	*/
 	}
 
 	
@@ -123,5 +152,55 @@ public class BigdataConnector {
 		} catch (RepositoryException e) {
 			e.printStackTrace();
 		}
+	}
+
+
+	public void addNamespace(String newNamespace) {
+		
+	/*	
+		final Properties props = new Properties();
+		props.put(BigdataSail.Options.NAMESPACE, newNamespace);
+*/
+		
+		/*
+		final RemoteRepositoryManager repo = new RemoteRepositoryManager("http://localhost:8080/bigdata/sparql");
+		
+		try {
+			repo.initialize();
+			repo.getAllRepositories();
+		} catch (RepositoryConfigException | RepositoryException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	*/
+		
+		
+		ClientConnectionManager m_cm = DefaultClientConnectionManagerFactory.getInstance().newInstance();;
+		final DefaultHttpClient httpClient = new DefaultHttpClient(m_cm);
+
+		httpClient.setRedirectStrategy(new DefaultRedirectStrategy());
+		
+		final ExecutorService executor = Executors.newCachedThreadPool();
+
+			//final RemoteRepositoryManager m_repo = new RemoteRepositoryManager(endpointUrl, httpClient, executor);
+		com.bigdata.rdf.sail.webapp.client.RemoteRepositoryManager rrm = new com.bigdata.rdf.sail.webapp.client.RemoteRepositoryManager(endpointUrl, httpClient, executor);
+		RemoteRepository rr = rrm.getRepositoryForURL(endpointUrl);
+		try {
+			rrm.getRepositoryDescriptions();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+	}
+	
+	public void removeNamespace(String namespace) throws RepositoryException {
+		repo.getConnection().removeNamespace(namespace);
+	}
+	
+	public RepositoryResult<Namespace> getAllNamespaces() throws RepositoryException {
+		
+		return repo.getConnection().getNamespaces();
 	}
 }

@@ -9,9 +9,11 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.Vector;
 
 import javax.swing.DefaultListCellRenderer;
@@ -41,6 +43,11 @@ import org.fit.segm.grouping.op.FindLineOperator;
 import org.fit.segm.grouping.op.HomogeneousLeafOperator;
 import org.openrdf.model.Model;
 import org.openrdf.repository.RepositoryException;
+
+import com.bigdata.bop.IVariable;
+import com.bigdata.bop.NamedSolutionSetRef;
+import com.bigdata.bop.Var;
+import com.bigdata.bop.controller.INamedSolutionSetRef;
 
 
 /**
@@ -90,6 +97,11 @@ public class StoragePlugin implements BrowserPlugin
 			tbr_connection.add(getLbl_RdfDb());
 			tbr_connection.add(getTfl_urlRDFDB());
 			tbr_connection.add(getBtn_loadDBData());
+			
+			//com.bigdata.rdf.sail.namespace
+			//com.bigdata.rdf.sail.
+			
+			
 			
 		}
 		return tbr_connection;
