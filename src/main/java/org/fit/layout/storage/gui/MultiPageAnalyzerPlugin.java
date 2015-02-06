@@ -126,6 +126,8 @@ public class MultiPageAnalyzerPlugin implements BrowserPlugin {
 			btn_multiPageAnalyzation.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 
+					clearUrlListModel();
+					
 					String urlstring = tfl_multiPageSeed.getText();
 
 					if (!urlstring.startsWith("http:")
@@ -136,7 +138,6 @@ public class MultiPageAnalyzerPlugin implements BrowserPlugin {
 					int urlLimit = (Integer) getTfl_pageLimit().getValue();
 					
 					List<String> urls = getCrawledUrlsFor(urlstring, urlLimit);
-					
 					for (String key : urls) {
 						urlListModel.addElement(key);
 					}
@@ -214,7 +215,7 @@ public class MultiPageAnalyzerPlugin implements BrowserPlugin {
 	}
 
 	/**
-	 * gets segemented and classificated page
+	 * gets segmented and classificated page
 	 * @param page
 	 * @return
 	 */
@@ -264,6 +265,10 @@ public class MultiPageAnalyzerPlugin implements BrowserPlugin {
 	}
 
 
+	private void clearUrlListModel() 
+	{
+		urlListModel.clear();
+	}
 	
 	//structural panel ===============================
 	
@@ -345,8 +350,10 @@ public class MultiPageAnalyzerPlugin implements BrowserPlugin {
 					HashMap<String,AnalyzedPage> analyzedUrls = getAnalyzedAllUrls(urls);
 					Set<String> keys = analyzedUrls.keySet();
 
+					clearTagTable();
 					
-					for (String key : keys) {
+					for (String key : keys) 
+					{
 						Area rootArea = analyzedUrls.get(key).getAtree().getRoot();
 						showTagsForAreas(rootArea);
 					}
@@ -377,6 +384,18 @@ public class MultiPageAnalyzerPlugin implements BrowserPlugin {
 			
 			showTagsForAreas(a);
 		}
+	}
+	
+	/**
+	 * Removes all rows in table
+	 */
+	private void clearTagTable() 
+	{	
+		for(int i = tagModelTable.getRowCount(); i>0; i--) 
+		{
+			tagModelTable.removeRow(i-1);
+		}
+		
 	}
 	
     private JTable getTbl_classificationTags()
