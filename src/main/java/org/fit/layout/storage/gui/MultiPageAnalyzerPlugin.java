@@ -58,7 +58,7 @@ public class MultiPageAnalyzerPlugin implements BrowserPlugin {
 	private Browser browser;
 	BigdataInterface bdi = null;
 
-	private JToolBar tbr_control;
+	private JPanel pnl_main;
 	private JTextField tfl_multiPageSeed;
 	private JSpinner tfl_pageLimit;
 	private JButton btn_multiPageAnalyzation;
@@ -79,7 +79,8 @@ public class MultiPageAnalyzerPlugin implements BrowserPlugin {
 	 */
 	public boolean init(Browser browser) {
 		this.browser = browser;
-		this.browser.addToolBar(getTbr_control());
+		
+		this.browser.addToolPanel("Multipage Analyzer", getTbr_control());
 		
 		this.browser.addStructurePanel("Multipage Analyzer", getPnl_crawledLinks());
 		return true;
@@ -88,14 +89,14 @@ public class MultiPageAnalyzerPlugin implements BrowserPlugin {
 	
 	// Control panel =============================
 
-	private JToolBar getTbr_control() {
-		if (tbr_control == null) {
-			tbr_control = new JToolBar();
-			tbr_control.add(getTfl_multiPageSeed());
-			tbr_control.add(getTfl_pageLimit());
-			tbr_control.add(getBtn_multiPageAnalyzation());
+	private JPanel getTbr_control() {
+		if (pnl_main == null) {
+			pnl_main = new JPanel();
+			pnl_main.add(getTfl_multiPageSeed());
+			pnl_main.add(getTfl_pageLimit());
+			pnl_main.add(getBtn_multiPageAnalyzation());
 		}
-		return tbr_control;
+		return pnl_main;
 	}
 
 	private JTextField getTfl_multiPageSeed() {

@@ -19,68 +19,75 @@ import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.RDF;
 
-public class BigdataModelBuilding {
+public class BigdataAreaModelBuilder {
 
 	Graph graph = null;
 	ValueFactoryImpl vf;
 	String url;
 	String uniqueID;
-	URIImpl launchNode;
-	URIImpl modelBuildingNode;
+	URIImpl pageNode;
+	URIImpl areaTreeNode;
 
-	public BigdataModelBuilding(AreaTree areaTree, URIImpl launchNode,
-			String url) {
-		inicialization();
-		this.launchNode = launchNode;
-		this.url = url;
-
-		createStatementsFromTree(launchNode, areaTree);
-	}
-
-	private void inicialization() {
+	public BigdataAreaModelBuilder(AreaTree areaTree, URIImpl pageNode, String url) {
+		
 		this.graph = new LinkedHashModel(); // it holds whole model
 		this.vf = ValueFactoryImpl.getInstance(); // constructor for the value
+		this.pageNode = pageNode;
+		this.url = url;
+
+		createAreaTreeModel(pageNode, areaTree);
 	}
 
-	private void createStatementsFromTree(URIImpl launchNode, AreaTree areaTree) {
+	public Graph getGraph() {
+		return graph;
+	}
+	
+	
+	//============================================
+	
+	
+	private void createAreaTreeModel(URIImpl pageNode, AreaTree areaTree) {
+		
 		this.uniqueID = getUniqueId();
-		this.modelBuildingNode = new URIImpl(this.url + "#" + this.uniqueID);
+		this.areaTreeNode = new URIImpl(this.url + "#" + this.uniqueID);
 
 		// it adds root node
-		this.graph.add(this.launchNode,
-				new URIImpl(AreaOnt.ModelBuilding.toString()),
-				this.modelBuildingNode);
+		this.graph.add(this.pageNode, new URIImpl(AreaOnt.hasAreaTree.toString()), this.areaTreeNode);
 
-		fillGraph(launchNode, areaTree);
-	}
-
-	private void fillGraph(URIImpl modelBuilding, AreaTree atree) {
 		
-		insertArea(atree.getRoot());
-		insertAllAreas( atree.getRoot().getChildAreas() );
+		addArea(areaTree.getRoot());
+		insertAllAreas( areaTree.getRoot().getChildAreas() );
 	}
 
+	/**
+	 * inserts children areas
+	 * @param areas
+	 */
 	private void insertAllAreas(List<Area> areas) {
 		
 		if(areas==null)
 			return;
 		
 		for(Area area : areas) {
-			insertArea(area);
+			addArea(area);
 			insertAllAreas(area.getChildAreas());
 		}
 	}
 
-	
-	private void insertArea(Area area) {
+	/**
+	 * adds area info model
+	 * @param area
+	 */
+	private void addArea(Area area) {
 
 		// unique identification from CSSBox
 		int id = area.getId();
 
 		
-		URI individual = new URIImpl(AreaOnt.Area + "#" + this.uniqueID + "-" + id);
+		URI individual = new URIImpl(this.url + "#" + this.uniqueID + "-" + id);
 		graph.add(individual, RDF.TYPE, vf.createURI(AreaOnt.Area));
-		graph.add(individual, new URIImpl(AreaOnt.build), this.modelBuildingNode );
+		graph.add(individual, new URIImpl(BoxOnt.belongsTo), this.pageNode );
+		graph.add(individual, new URIImpl(AreaOnt.isPartOf), this.areaTreeNode );
 		
 
 		// appends geometry
@@ -120,22 +127,27 @@ public class BigdataModelBuilding {
 		
 	}
 
+	/**
+	 * gets unique id for areaTree
+	 * @return
+	 */
 	private String getUniqueId() {
 		String dateTime = getDateTime();
 		dateTime = dateTime.replace(":", "");
 		dateTime = dateTime.replace("-", "");
 		dateTime = dateTime.replace(" ", "");
 
-		return "mb-" + dateTime;
+		return "at-" + dateTime;
 	}
 
+	/**
+	 * gets actual datetime
+	 * @return
+	 */
 	private String getDateTime() {
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		java.util.Date date = new java.util.Date();
 		return dateFormat.format(date);
 	}
-
-	public Graph getGraph() {
-		return graph;
-	}
+	
 }

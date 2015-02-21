@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.fit.layout.model.AreaTree;
 import org.fit.layout.model.Page;
+import org.fit.layout.storage.ontology.AreaOnt;
 import org.fit.layout.storage.ontology.BoxOnt;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Model;
@@ -16,6 +17,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
@@ -27,6 +29,7 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 
+import com.bigdata.gom.gpo.GPO;
 import com.bigdata.rdf.sail.webapp.client.IPreparedGraphQuery;
 
 
@@ -35,7 +38,7 @@ public class BigdataInterface {
 	BigdataConnector bddb;
 	Boolean lbs = false;
 	String url = "http://localhost:8080/bigdata/sparql";
-	URIImpl lastLaunchNode;
+	
 
 	public BigdataInterface() throws RepositoryException {
 		bddb = new BigdataConnector(this.url, this.lbs);
@@ -51,10 +54,20 @@ public class BigdataInterface {
 		return this.bddb.getConnection();
 	}
 	
+	/**
+	 * unimplemented
+	 * @param newNamespace
+	 */
 	public void addNamespace(String newNamespace) {
 		bddb.addNamespace(newNamespace);
 	}
 
+	/**
+	 * 
+	 * @return
+	 * @throws RepositoryException
+	 * @unimplemented in Bigdata framework
+	 */
 	public RepositoryResult<Namespace> getAllNamespaces() throws RepositoryException {
 		return bddb.getAllNamespaces();
 	}
@@ -69,7 +82,7 @@ public class BigdataInterface {
 
 		try {
 			GraphQueryResult result = this.bddb.repo.getRemoteRepository()
-					.getStatements(null, sourceUrlPredicate, null, true);// prepareTupleQuery(request);
+					.getStatements(null, sourceUrlPredicate, null, true);
 
 			// do something with the results
 			while (result.hasNext()) {
@@ -90,20 +103,20 @@ public class BigdataInterface {
 
 	}
 
-	public List<BigdataLaunchInfo> getLaunchesForUrl(String url) {
+	public List<BigdataPageInfo> getPagesForUrl(String url) {
 
-		List<String> ids = getLauncheIds(url);
-		List<BigdataLaunchInfo> launches = new ArrayList<BigdataLaunchInfo>();
+		List<String> ids = getPageIds(url);
+		List<BigdataPageInfo> pagesInfos = new ArrayList<BigdataPageInfo>();
 
 		for (String id : ids) {
 
-			BigdataLaunchInfo bdl = getLaunchInfo(id);
+			BigdataPageInfo bdl = getPageInfo(id);
 
 			if (bdl != null)
-				launches.add(bdl);
+				pagesInfos.add(bdl);
 		}
 
-		return launches;
+		return pagesInfos;
 	}
 
 	/**
@@ -114,44 +127,40 @@ public class BigdataInterface {
 	public void insertPage(Page page) {
 		
 		// creates graph representation of RDF triples
-		BigdataLaunchModel pgb = new BigdataLaunchModel(page);
+		BigdataBoxModelBuilder pgb = new BigdataBoxModelBuilder(page);
 
 		// stores graph of triples into DB
 		insertGraph(pgb.getGraph());
-		
-		this.lastLaunchNode = pgb.getLaunchNode();
 	}
 
-	public void appendAreaTreeToLaunchNode(AreaTree atree, URIImpl launch, String url) {
-		
-		BigdataModelBuilding buildingModel = new BigdataModelBuilding(atree, launch, url);
-		insertGraph(buildingModel.getGraph());
-	}
 	
 	public void insertAreaTree(AreaTree atree, String url) {
 		
-		appendAreaTreeToLaunchNode(atree, getLastLaunchNode(), url);
+		try {
+			URIImpl page = getPageNode(url);
+		
+			BigdataAreaModelBuilder buildingModel = new BigdataAreaModelBuilder(atree, page, url);
+			insertGraph(buildingModel.getGraph());
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
+
 	
 	/**
 	 * it removes launch
 	 * 
-	 * @param launchId
+	 * @param pageId
 	 */
-	public void removeLaunch(String launchId) {
+	public void removePage(String pageId) {
 
-		removeLaunchModel(launchId);
-		removeLaunchInfo(launchId);
+		removePageBoxModel(pageId);
+		//removePageAreaModel(pageId);
+		removePageInfo(pageId);
 
-	}
-
-	/**
-	 * it appends graph into database
-	 * 
-	 * @param graph
-	 */
-	public void insertGraph(Graph graph) {
-		bddb.addGraph(graph);
 	}
 
 	public int getTriplesNumber() {
@@ -165,52 +174,22 @@ public class BigdataInterface {
 		return null;
 	}
 
-	/**
-	 * it returns Graph of statements belonging specific launch
-	 * 
-	 * 
-	 * @param launchId
-	 * @return
-	 * @throws Exception
-	 * @deprecated use {@link #getModelForLaunch()} instead.
-	 */
-	@Deprecated
-	public Graph getGraphForLaunch(String launchId) throws Exception {
-		String query = "PREFIX app: <http://www.mws.cz/render.owl#>"
-				+ "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>"
-				+ "CONSTRUCT { ?s ?p ?o } " + "WHERE { ?s ?p ?o . "
-				+ "?s rdf:type app:Box . " + "?s ?b ?a . "
-				+ "?a app:LaunchDatetime \"" + launchId + "\". "
-				+ "?a rdf:type app:Launch  }";
-
-		IPreparedGraphQuery pgq = bddb.repo.getRemoteRepository()
-				.prepareGraphQuery(query);
-		GraphQueryResult gqr = pgq.evaluate();
-
-		Graph graph = new LinkedHashModel();
-
-		while (gqr.hasNext()) {
-			graph.add(gqr.next());
-		}
-
-		return graph;
-	}
 
 	/**
 	 * it builds Model variable (specific type of Graph) for the information
 	 * 
 	 * 
-	 * @param launchId
+	 * @param pageId
 	 * @return
 	 * @throws Exception
 	 */
-	public Model getLaunchModel(String launchId) throws Exception {
+	public Model getPageBoxModelFromTimestamp(String pageId) throws Exception {
 		String query = "PREFIX app: <http://www.mws.cz/render.owl#>"
 				+ "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>"
 				+ "CONSTRUCT { ?s ?p ?o } " + "WHERE { ?s ?p ?o . "
 				+ "?s rdf:type app:Box . " + "?s ?b ?a . "
-				+ "?a app:LaunchDatetime \"" + launchId + "\". "
-				+ "?a rdf:type app:Launch  }";
+				+ "?a app:LaunchDatetime \"" + pageId + "\". "
+				+ "?a rdf:type app:Page  }";
 
 		IPreparedGraphQuery pgq = bddb.repo.getRemoteRepository()
 				.prepareGraphQuery(query);
@@ -219,11 +198,85 @@ public class BigdataInterface {
 		return convertGraphQueryResult2Model(gqr);
 	}
 	
-	public Model getLaunchInfoModel(String launchId) throws Exception {
+	/*
+	 * get page box model from the unique page ID
+	 * 
+	 * @param pageId
+	 * @return
+	 * @throws Exception
+	 */
+	public Model getPageBoxModelFromNode(String pageId) throws Exception {
 		String query = "PREFIX app: <http://www.mws.cz/render.owl#>"
 				+ "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>"
 				+ "CONSTRUCT { ?s ?p ?o } " + "WHERE { ?s ?p ?o . "
-				+ "?s app:LaunchDatetime \"" + launchId + "\". "
+				+ "?s rdf:type app:Box . " 
+				+ "?s app:belongsTo <"+pageId+">}";
+
+		IPreparedGraphQuery pgq = bddb.repo.getRemoteRepository()
+				.prepareGraphQuery(query);
+		GraphQueryResult gqr = pgq.evaluate();
+
+		return convertGraphQueryResult2Model(gqr);
+	}
+	
+	
+	/**
+	 * it returns area model
+	 * @param areaTreeId
+	 * @return
+	 * @throws Exception
+	 */
+	public Model getPageAreaModel(URIImpl areaTreeId) throws Exception {
+		String query = "PREFIX app: <http://www.mws.cz/render.owl#>"
+				+ "PREFIX seg: <http://www.fit.vutbr.cz/~imilicka/public/ontology/segmentation.owl#>"
+				+ "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>"
+				+ "CONSTRUCT { ?s ?p ?o } " + "WHERE { ?s ?p ?o . "
+				+ "?s rdf:type seg:Area . "
+				+ "?s seg:isPartOf <" + areaTreeId.toString() + "> }";
+
+		IPreparedGraphQuery pgq = bddb.repo.getRemoteRepository()
+				.prepareGraphQuery(query);
+		GraphQueryResult gqr = pgq.evaluate();
+
+		return convertGraphQueryResult2Model(gqr);
+	}
+	
+	/**
+	 * gets all area models for specific url
+	 * @param url
+	 * @throws Exception 
+	 */
+	public List<String> getPageAreaModels(String url) throws Exception {
+		
+		List<String> output = new ArrayList<String>();
+
+		String query = "PREFIX app: <http://www.mws.cz/render.owl#>"
+				+ "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>"
+				+ "CONSTRUCT { ?s ?p ?o } " + "WHERE { ?s ?p ?o . "
+				+ "?s rdf:type app:Page. "
+				+ "?s app:sourceUrl \"" + url + "\" }";
+
+		IPreparedGraphQuery pgq = bddb.repo.getRemoteRepository().prepareGraphQuery(query);
+		GraphQueryResult gqr = pgq.evaluate();
+		
+		
+		URIImpl hasAreaTree = new URIImpl(AreaOnt.hasAreaTree);
+		while( gqr.hasNext() ) {
+			Statement stmt = gqr.next();
+			if( stmt.getPredicate().equals(hasAreaTree) ) {
+				output.add(stmt.getObject().stringValue());
+			}
+		}
+		
+		return output;
+	}
+	
+	
+	public Model getLaunchInfoModel(String pageId) throws Exception {
+		String query = "PREFIX app: <http://www.mws.cz/render.owl#>"
+				+ "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>"
+				+ "CONSTRUCT { ?s ?p ?o } " + "WHERE { ?s ?p ?o . "
+				+ "?s app:LaunchDatetime \"" + pageId + "\". "
 				+ " }";
 
 		IPreparedGraphQuery pgq = bddb.repo.getRemoteRepository()
@@ -283,26 +336,50 @@ public class BigdataInterface {
 		
 	}
 
-	
-	public URIImpl getLastLaunchNode() {
-		return this.lastLaunchNode;
-	}
 
 	
+	/**
+	 * gets page node from specific page url
+	 * @param url
+	 * @return
+	 * @throws Exception
+	 */
+	public URIImpl getPageNode(String url) throws Exception {
+		
+		String query = "PREFIX app: <http://www.mws.cz/render.owl#>"
+				+ "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>"
+				+ "CONSTRUCT { ?s ?p ?o } " + "WHERE { ?s ?p ?o . "
+				+ "?s rdf:type app:Page . " 
+				+ "?s app:sourceUrl \"" + url + "\" } ";
+
+		IPreparedGraphQuery pgq = bddb.repo.getRemoteRepository()
+				.prepareGraphQuery(query);
+		GraphQueryResult gqr = pgq.evaluate();
+
+		String res = null;
+		
+		// gets page node
+		while(gqr.hasNext()) {
+			Statement stm = gqr.next();
+			res = stm.getSubject().stringValue();
+		}
+		
+		return new URIImpl(res);
+	}
 	
 	
-	//=========================================
+	//PRIVATE =========================================
 	
 	/**
 	 * it removes all launch nodes
 	 * 
 	 * @param launchDatetime
 	 */
-	private void removeLaunchModel(String launchDatetime) {
+	private void removePageBoxModel(String launchDatetime) {
 
 		Model m;
 		try {
-			m = getLaunchModel(launchDatetime);
+			m = getPageBoxModelFromTimestamp(launchDatetime);
 			bddb.getConnection().remove(m);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -314,13 +391,12 @@ public class BigdataInterface {
 	/**
 	 * it removes launch info
 	 * 
-	 * @param launchId
+	 * @param pageId
 	 */
-	private void removeLaunchInfo(String launchId) {
+	private void removePageInfo(String pageId) {
 		
 		try {
-			Model m = getLaunchInfoModel(launchId);
-			
+			Model m = getLaunchInfoModel(pageId);
 			bddb.getConnection().remove(m);
 
 		} catch (Exception e) {
@@ -330,6 +406,12 @@ public class BigdataInterface {
 
 	}
 	
+	/**
+	 * converstion from GraphQueryResult info Model
+	 * @param gqr
+	 * @return
+	 * @throws QueryEvaluationException
+	 */
 	private Model convertGraphQueryResult2Model(GraphQueryResult gqr) throws QueryEvaluationException {
 		
 		// create a new Model to put statements in
@@ -349,32 +431,27 @@ public class BigdataInterface {
 	 *            it defines url of processed site
 	 * @return list of specific launches
 	 */
-	private List<String> getLauncheIds(String url) {
+	private List<String> getPageIds(String url) {
 		List<String> output = new ArrayList<String>();
 
 		try {
 			// request for all launches of the specific url
-			URIImpl sourceUrlPredicate = new URIImpl(
-					BoxOnt.sourceUrl.toString());
+			URIImpl sourceUrlPredicate = new URIImpl(BoxOnt.sourceUrl.toString());
 			ValueFactoryImpl vf = ValueFactoryImpl.getInstance(); // constructor
 																	// for the
 																	// value
 																	// creation
 			GraphQueryResult result = bddb.repo.getRemoteRepository()
-					.getStatements(null, sourceUrlPredicate,
-							vf.createLiteral(url), true); // .getStatements(null,
-															// sourceUrlPredicate,
-															// vf.createLiteral(url),
-															// true);
+					.getStatements(null, sourceUrlPredicate, vf.createLiteral(url), true); 
 
 			// stores all launches into list of string
-			while (result.hasNext()) {
-
+			while (result.hasNext()) 
+			{
 				Statement row = result.next();
-				String launch = row.getSubject().toString();
+				String page = row.getSubject().toString();
 
-				if (!output.contains(launch))
-					output.add(launch);
+				if (!output.contains(page))
+					output.add(page);
 			}
 
 		} catch (RepositoryException e) {
@@ -391,16 +468,21 @@ public class BigdataInterface {
 		return output;
 	}
 
-	private BigdataLaunchInfo getLaunchInfo(String launchId) {
+	/**
+	 * gets page info
+	 * @param pageId
+	 * @return
+	 */
+	private BigdataPageInfo getPageInfo(String pageId) {
 
-		BigdataLaunchInfo bdl = null;
+		BigdataPageInfo bdl = null;
 
 		try {
-			URIImpl launchSubject = new URIImpl(launchId);
+			URIImpl page = new URIImpl(pageId);
 			GraphQueryResult results = bddb.repo.getRemoteRepository()
-					.getStatements(launchSubject, null, null, true); 
+					.getStatements(page, null, null, true); 
 
-			bdl = new BigdataLaunchInfo(results);
+			bdl = new BigdataPageInfo(results);
 		} catch (QueryEvaluationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -411,5 +493,15 @@ public class BigdataInterface {
 
 		return bdl;
 	}
+
+	/**
+	 * it appends graph into database
+	 * 
+	 * @param graph
+	 */
+	private void insertGraph(Graph graph) {
+		bddb.addGraph(graph);
+	}
+
 
 }

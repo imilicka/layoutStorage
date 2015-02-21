@@ -1,4 +1,4 @@
-package org.fit.layout.storage;
+package org.fit.layout.storage.model;
 
 import java.awt.Color;
 
@@ -24,8 +24,6 @@ public class BigdataArea extends DefaultArea implements Area {
 	Integer height = null;
 	Integer x = null;
 	Integer y = null;
-	
-	
 
 
 	/**

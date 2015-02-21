@@ -22,18 +22,20 @@ import org.openrdf.model.vocabulary.RDF;
  * @author milicka
  * 
  */
-public class BigdataLaunchModel {
+public class BigdataBoxModelBuilder {
 
 	private Graph graph;
 	private String baseUrl;
 	private ValueFactoryImpl vf;
 	private String uniqueID;
 	private String dateTime;
-	private URIImpl launchNode;
+	private URIImpl pageNode;
 
-	public BigdataLaunchModel(Page page) {
+	public BigdataBoxModelBuilder(Page page) {
 
-		inicializeGraph(page.getSourceURL().toString());
+		baseUrl = page.getSourceURL().toString();
+		
+		inicializeGraph();
 
 		Box bdb = page.getRoot();
 		this.insertBox(bdb);
@@ -50,10 +52,9 @@ public class BigdataLaunchModel {
 	 * 
 	 * @return launch node for the element linking
 	 */
-	private URI inicializeGraph(String url) {
+	private URI inicializeGraph() {
 
 		this.graph = new LinkedHashModel(); // it holds whole model
-		this.baseUrl = url; // web site url
 		this.vf = ValueFactoryImpl.getInstance(); // constructor for the value
 													// creation
 		this.dateTime = getDateTime();
@@ -61,15 +62,15 @@ public class BigdataLaunchModel {
 																// unique id
 
 		// inicialization with launch node
-		this.launchNode = new URIImpl(baseUrl + "#" + this.uniqueID);
-		graph.add(this.launchNode, RDF.TYPE, new URIImpl(BoxOnt.Launch));
-		graph.add(this.launchNode,
+		this.pageNode = new URIImpl(baseUrl + "#" + this.uniqueID);
+		graph.add(this.pageNode, RDF.TYPE, new URIImpl(BoxOnt.Page));
+		graph.add(this.pageNode,
 				new URIImpl(BoxOnt.LaunchDatetime.toString()),
 				vf.createLiteral(this.dateTime));
-		graph.add(this.launchNode, new URIImpl(BoxOnt.sourceUrl.toString()),
+		graph.add(this.pageNode, new URIImpl(BoxOnt.sourceUrl.toString()),
 				vf.createLiteral(this.baseUrl));
 
-		return this.launchNode;
+		return this.pageNode;
 	}
 
 	/**
@@ -130,17 +131,14 @@ public class BigdataLaunchModel {
 		int id = box.getId();
 
 		// add BOX individual into graph
-		URI individual = new URIImpl(BoxOnt.Box + "#" + this.uniqueID + "-"
-				+ id);
+		URI individual = new URIImpl(baseUrl + "#" + this.uniqueID + "-" + id);
 		graph.add(individual, RDF.TYPE, vf.createURI(BoxOnt.Box));
 
 		// unique identificator of box
-		graph.add(individual, new URIImpl(BoxOnt.id.toString()),
-				vf.createLiteral(id));
+		graph.add(individual, new URIImpl(BoxOnt.id.toString()), vf.createLiteral(id));
 
 		// pin to launch node
-		graph.add(individual, new URIImpl(BoxOnt.belongsTo.toString()),
-				this.launchNode);
+		graph.add(individual, new URIImpl(BoxOnt.belongsTo.toString()), this.pageNode);
 
 		// store position and size of element
 		// Rectangular rec = box.getContentBounds();
@@ -240,7 +238,7 @@ public class BigdataLaunchModel {
 	}
 
 	public URIImpl getLaunchNode() {
-		return launchNode;
+		return pageNode;
 	} 
 
 

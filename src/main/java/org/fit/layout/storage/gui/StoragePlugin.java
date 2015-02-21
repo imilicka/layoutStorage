@@ -7,6 +7,9 @@ package org.fit.layout.storage.gui;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Iterator;
@@ -20,26 +23,32 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 
 import org.fit.layout.api.AreaTreeOperator;
+import org.fit.layout.api.AreaTreeProvider;
+import org.fit.layout.api.BoxTreeProvider;
 import org.fit.layout.classify.FeatureAnalyzer;
 import org.fit.layout.classify.VisualClassifier;
 import org.fit.layout.classify.op.TagEntitiesOperator;
 import org.fit.layout.classify.op.VisualClassificationOperator;
 import org.fit.layout.gui.Browser;
 import org.fit.layout.gui.BrowserPlugin;
+import org.fit.layout.model.AreaTree;
 import org.fit.layout.model.Page;
 import org.fit.layout.model.Tag;
 import org.fit.layout.storage.BigdataInterface;
-import org.fit.layout.storage.BigdataLaunchInfo;
-import org.fit.layout.storage.BigdataPage;
+import org.fit.layout.storage.BigdataPageInfo;
+import org.fit.layout.storage.model.BigdataAreaTree;
+import org.fit.layout.storage.model.BigdataPage;
 import org.fit.segm.grouping.SegmentationAreaTree;
 import org.fit.segm.grouping.op.FindLineOperator;
 import org.fit.segm.grouping.op.HomogeneousLeafOperator;
 import org.openrdf.model.Model;
+import org.openrdf.model.impl.URIImpl;
 import org.openrdf.repository.RepositoryException;
 
 
@@ -53,50 +62,86 @@ public class StoragePlugin implements BrowserPlugin
     private Browser browser;
     BigdataInterface bdi = null;	
     
-    private JToolBar tbr_connection;
+    private JPanel pnl_main;
+    private JPanel tbr_connection;
     private JTextField tfl_urlRDFDB;
     private JLabel lbl_rdfDb;
     private JButton btn_loadDBData;
-    private JToolBar tbr_storageSelection;
+    private JPanel tbr_storageSelection;
     private JLabel lbl_urls;
     private JComboBox<String> cbx_urls;
     private JLabel lbl_launches;
-    private JComboBox<BigdataLaunchInfo> cbx_launches;
-    private JButton btn_loadModel;
-    private JToolBar tbr_control;
-    private JButton btn_saveModel;
-    private JButton btn_removeModel;
+    private JComboBox<BigdataPageInfo> cbx_launches;
+    private JButton btn_loadBoxModel;
+    private JPanel tbr_control;
+    private JButton btn_saveBoxTreeModel;
+    private JButton btn_removePage;
     private JButton btn_clearDB;
-
+    private Boolean oneUrlOccurence = true;
+    private JButton btn_saveAreaTreeModel;
+    private JComboBox<String> cbx_areaTrees;
+    private JButton btnNewButton;
+    
     
 	//=============================
     
-    @Override
+    /**
+     * @wbp.parser.entryPoint
+     */
     public boolean init(Browser browser)
     {
         this.browser = browser;
-        this.browser.addToolBar(getTbr_connection());
-        this.browser.addToolBar(getTbr_storageSelection());
-        this.browser.addToolBar(getTbr_control() );
+        this.browser.addToolPanel("Model Storage", getPnl_main()  );
         return true;
+    }
+    
+    
+    private JPanel getPnl_main() {
+    	
+    	 if (pnl_main == null) {
+    		 
+             pnl_main = new JPanel();
+             GridBagLayout gbl_main = new GridBagLayout();
+             gbl_main.columnWeights = new double[] { 0.0 };
+             gbl_main.rowWeights = new double[] { 0.0, 0.0, 0.0 };
+             pnl_main.setLayout(gbl_main);
+             GridBagConstraints gbc_connection = new GridBagConstraints();
+             gbc_connection.weightx = 1.0;
+             gbc_connection.anchor = GridBagConstraints.EAST;
+             gbc_connection.fill = GridBagConstraints.BOTH;
+             gbc_connection.insets = new Insets(0, 0, 5, 0);
+             gbc_connection.gridx = 0;
+             gbc_connection.gridy = 0;
+             pnl_main.add(getPnl_connection(), gbc_connection);
+             GridBagConstraints gbc_storageSelection = new GridBagConstraints();
+             gbc_storageSelection.weightx = 1.0;
+             gbc_storageSelection.fill = GridBagConstraints.BOTH;
+             gbc_storageSelection.insets = new Insets(0, 0, 5, 0);
+             gbc_storageSelection.gridx = 0;
+             gbc_storageSelection.gridy = 1;
+             pnl_main.add(getPnl_storageSelection(), gbc_storageSelection);
+             GridBagConstraints gbc_control = new GridBagConstraints();
+             gbc_control.weightx = 1.0;
+             gbc_control.anchor = GridBagConstraints.EAST;
+             gbc_control.fill = GridBagConstraints.BOTH;
+             gbc_control.insets = new Insets(0, 0, 5, 0);
+             gbc_control.gridx = 0;
+             gbc_control.gridy = 2;
+             pnl_main.add(getPnl_control(), gbc_control);
+         }
+         return pnl_main;
     }
     
     
     //Connection panel=================================================================
     
-    private JToolBar getTbr_connection() 
+    private JPanel getPnl_connection() 
     {
 		if (tbr_connection == null) {
-			tbr_connection = new JToolBar();
+			tbr_connection = new JPanel();
 			tbr_connection.add(getLbl_RdfDb());
 			tbr_connection.add(getTfl_urlRDFDB());
 			tbr_connection.add(getBtn_loadDBData());
-			
-			//com.bigdata.rdf.sail.namespace
-			//com.bigdata.rdf.sail.
-			
-			
-			
 		}
 		return tbr_connection;
 	}
@@ -105,10 +150,10 @@ public class StoragePlugin implements BrowserPlugin
     {
 		if (tfl_urlRDFDB == null) {
 			tfl_urlRDFDB = new JTextField();
-			tfl_urlRDFDB.setMinimumSize(new Dimension(12, 20));
+			//tfl_urlRDFDB.setMinimumSize(new Dimension(12, 20));
 			tfl_urlRDFDB.setHorizontalAlignment(SwingConstants.LEFT);
 			tfl_urlRDFDB.setText("http://localhost:8080/bigdata/sparql");
-			tfl_urlRDFDB.setColumns(30);
+			//tfl_urlRDFDB.setColumns(30);
 		}
 		return tfl_urlRDFDB;
 	}
@@ -137,15 +182,17 @@ public class StoragePlugin implements BrowserPlugin
 	
 	//Selection panel =============================
 	
-	private JToolBar getTbr_storageSelection() 
+	private JPanel getPnl_storageSelection() 
 	{
 		if (tbr_storageSelection == null) {
-			tbr_storageSelection = new JToolBar();
+			tbr_storageSelection = new JPanel();
 			tbr_storageSelection.add(getLbl_urls());
 			tbr_storageSelection.add(getCbx_urls());
 			tbr_storageSelection.add(getLbl_launches());
 			tbr_storageSelection.add(getCbx_launches());
-			tbr_storageSelection.add(getBtn_loadModel());
+			tbr_storageSelection.add(getBtn_loadBoxModel());
+			tbr_storageSelection.add(getCbx_areaTrees());
+			tbr_storageSelection.add(getBtnNewButton());
 			
 		}
 		return tbr_storageSelection;
@@ -163,25 +210,41 @@ public class StoragePlugin implements BrowserPlugin
 	{
 		if (cbx_urls == null) {
 			cbx_urls = new JComboBox<String>();
+			cbx_urls.setMaximumRowCount(8);
+			cbx_urls.setPreferredSize(new Dimension(300,25));
 			cbx_urls.addActionListener(new ActionListener() {
 				
-				@Override
 				public void actionPerformed(ActionEvent e) {
 					
 					if(cbx_launches==null)
 			    		return;
 			    	
 					cbx_launches.removeAllItems();
+					cbx_areaTrees.removeAllItems();
 			    	
 			    	if( cbx_urls.getItemCount()>0 ) {
 			    		
 			    		cbx_launches.setEnabled(true);
+			    		cbx_areaTrees.setEnabled(true);
 			    		
-			    		List<BigdataLaunchInfo> launchList = bdi.getLaunchesForUrl(cbx_urls.getSelectedItem().toString() ); 
+			    		
+			    		List<BigdataPageInfo> launchList = bdi.getPagesForUrl(cbx_urls.getSelectedItem().toString() ); 
+			    		
+			    		try {
+							List<String> areaTrees = bdi.getPageAreaModels(cbx_urls.getSelectedItem().toString() );
+							for(String area: areaTrees) {
+								System.out.println("area" + area);
+								cbx_areaTrees.addItem(area);
+							}
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						} 
+			    		
 			    		
 			    		
 			        	//fill combobox with launches
-			        	for(BigdataLaunchInfo launch : launchList) {
+			        	for(BigdataPageInfo launch : launchList) {
 			        		cbx_launches.addItem( launch );
 			        	}
 			    	}
@@ -199,14 +262,20 @@ public class StoragePlugin implements BrowserPlugin
 	{
 		if (lbl_launches == null) {
 			lbl_launches = new JLabel("Launches");
+			
+			if(oneUrlOccurence) {
+				lbl_launches.setVisible(false);
+			}
 		}
 		return lbl_launches;
 	}
 	
-	private JComboBox<BigdataLaunchInfo> getCbx_launches() 
+	private JComboBox<BigdataPageInfo> getCbx_launches() 
 	{
 		if (cbx_launches == null) {
-			cbx_launches = new JComboBox<BigdataLaunchInfo>();
+			cbx_launches = new JComboBox<BigdataPageInfo>();
+			cbx_launches.setMaximumRowCount(0);
+			cbx_launches.setPreferredSize(new Dimension(300,25));
 			cbx_launches.setRenderer(new DefaultListCellRenderer() {
 
 				private static final long serialVersionUID = 2525351383652612796L;
@@ -214,8 +283,8 @@ public class StoragePlugin implements BrowserPlugin
 					@Override 
 		            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 		                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-		                if(value instanceof BigdataLaunchInfo){
-		                    BigdataLaunchInfo launch = (BigdataLaunchInfo) value;
+		                if(value instanceof BigdataPageInfo){
+		                    BigdataPageInfo launch = (BigdataPageInfo) value;
 		                    setText(launch.getDate());
 		                } 
 		                return this;
@@ -223,44 +292,42 @@ public class StoragePlugin implements BrowserPlugin
 		    });
 			cbx_launches.addActionListener(new ActionListener() {
 				
-				@Override
 				public void actionPerformed(ActionEvent e) {
 					
 					if(cbx_launches==null)
 			    		return;
 			    	
 			    	if( cbx_launches.getItemCount()>0 ) {
-			    		btn_loadModel.setEnabled(true);
+			    		btn_loadBoxModel.setEnabled(true);
 			    	}
 			    	else {
-			    		btn_loadModel.setEnabled(false);
+			    		btn_loadBoxModel.setEnabled(false);
 			    	}
 					
 				}
 			});
+		
+			if(oneUrlOccurence) {
+				cbx_launches.setVisible(false);
+			}
 		}
 		return cbx_launches;
 	}
 	
-	private JButton getBtn_loadModel() 
+	private JButton getBtn_loadBoxModel() 
 	{
-		if (btn_loadModel == null) {
-			btn_loadModel = new JButton("Load Model");
-			btn_loadModel.addActionListener(new ActionListener() {
+		if (btn_loadBoxModel == null) {
+			btn_loadBoxModel = new JButton("Load Box Model");
+			btn_loadBoxModel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					
-					BigdataLaunchInfo launch = (BigdataLaunchInfo) cbx_launches.getSelectedItem();
-	
+					BigdataPageInfo launch = (BigdataPageInfo) cbx_launches.getSelectedItem();
 	
 			        try {
 			        	
-			        	Model modelStatements = bdi.getLaunchModel(launch.getDate().toString());
-						
+			        	Model modelStatements = bdi.getPageBoxModelFromTimestamp(launch.getDate().toString());
 						Page page = new BigdataPage(modelStatements, launch.getUrl() );
 						browser.setPage(page);
-						
-						segmentPage(page);
-						
 						
 					} catch (Exception e1) {
 						
@@ -275,9 +342,9 @@ public class StoragePlugin implements BrowserPlugin
 					
 				}
 			});
-			btn_loadModel.setEnabled(false);
+			btn_loadBoxModel.setEnabled(false);
 		}
-		return btn_loadModel;
+		return btn_loadBoxModel;
 	}
 	
 	/**
@@ -297,9 +364,10 @@ public class StoragePlugin implements BrowserPlugin
 				cbx_urls.addItem(url);
 			}
 			
-			getBtn_saveModel().setEnabled(true);
-			getBtn_removeModel().setEnabled(true);
+			getBtn_saveBoxTreeModel().setEnabled(true);
+			getBtn_removePage().setEnabled(true);
 			getBtn_clearDB().setEnabled(true);
+			getBtn_saveAreaTreeModel().setEnabled(true);
 		} 
 		catch (RepositoryException e) {
 
@@ -311,35 +379,33 @@ public class StoragePlugin implements BrowserPlugin
 	}
 	
 	
-	//Control panel =============================
 	
 	//Control panel =============================
 	
-	private JToolBar getTbr_control() 
+	private JPanel getPnl_control() 
 	{
 		if (tbr_control == null) {
-			tbr_control = new JToolBar();
-			tbr_control.add(getBtn_saveModel());
-			tbr_control.add(getBtn_removeModel());
+			tbr_control = new JPanel();
+			tbr_control.add(getBtn_saveBoxTreeModel());
+			tbr_control.add(getBtn_saveAreaTreeModel());
+			tbr_control.add(getBtn_removePage());
 			tbr_control.add(getBtn_clearDB());
 		}
 		return tbr_control;
 	}
 	
-	private JButton getBtn_saveModel() 
+	private JButton getBtn_saveBoxTreeModel() 
 	{
-		if (btn_saveModel == null) {
-			btn_saveModel = new JButton("Save page to DB");
-			btn_saveModel.setEnabled(false);
-			btn_saveModel.addActionListener(new ActionListener() {
+		if (btn_saveBoxTreeModel == null) {
+			btn_saveBoxTreeModel = new JButton("Save Box Tree to DB");
+			btn_saveBoxTreeModel.setEnabled(false);
+			btn_saveBoxTreeModel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					
 					Page page = browser.getPage();
 					
 					if(page!=null) {
 						bdi.insertPage(page);
-						
-						//bdi.insertAreaTree( proc.getAreaTree() , page.getSourceURL().toString() );
 						
 						loadDistinctUrls();
 					}
@@ -354,41 +420,22 @@ public class StoragePlugin implements BrowserPlugin
 				}
 			});
 		}
-		return btn_saveModel;
+		return btn_saveBoxTreeModel;
 	}
 	
-	private JButton getBtn_removeModel() 
+	private JButton getBtn_removePage() 
 	{
-		if (btn_removeModel == null) {
-			btn_removeModel = new JButton("Remove Model");
-			btn_removeModel.setEnabled(false);
-			btn_removeModel.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent arg0) {
-					String launchDate = "-";
-
-					try {
-						BigdataLaunchInfo launch = (BigdataLaunchInfo) cbx_launches
-								.getSelectedItem();
-						launchDate = launch.getDate().toString();
-
-						bdi.removeLaunch(launchDate);
-						
-						loadDistinctUrls();
-					} catch (Exception e) {
-						e.printStackTrace();
-
-						/*
-						JOptionPane.showMessageDialog(mainWindow,
-								"Cannot remove launch model for " + launchDate,
-								"ERROR", JOptionPane.ERROR_MESSAGE);
-						*/
-					}
-						
+		if (btn_removePage == null) {
+			btn_removePage = new JButton("Remove Model");
+			btn_removePage.setEnabled(false);
+			btn_removePage.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) 
+				{
+					removeSelectedPageLaunch();
 				}
 			});
-			
 		}
-		return btn_removeModel;
+		return btn_removePage;
 	}
 	
 	private JButton getBtn_clearDB() 
@@ -406,7 +453,23 @@ public class StoragePlugin implements BrowserPlugin
 		return btn_clearDB;
 	}
     
-	
+
+	private void removeSelectedPageLaunch() 
+	{
+		String launchDate = "-";
+
+		try {
+			BigdataPageInfo launch = (BigdataPageInfo) cbx_launches
+					.getSelectedItem();
+			launchDate = launch.getDate().toString();
+
+			bdi.removePage(launchDate);
+			
+			loadDistinctUrls();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	
 	public void segmentPage(Page page)
     {
@@ -463,5 +526,61 @@ public class StoragePlugin implements BrowserPlugin
         	System.out.println( t.getValue() );
         	
         }
+	}
+	
+	private JButton getBtn_saveAreaTreeModel() {
+		if (btn_saveAreaTreeModel == null) {
+			btn_saveAreaTreeModel = new JButton("Save Area Tree to DB");
+			btn_saveAreaTreeModel.setEnabled(false);
+			btn_saveAreaTreeModel.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					Page page = browser.getPage();
+					AreaTree atree = browser.getAreaTree();
+					
+					if(atree!=null && page!=null) {
+						bdi.insertAreaTree( atree , page.getSourceURL().toString() );
+					}
+					
+					loadDistinctUrls();
+				}
+			});
+			
+			
+		}
+		return btn_saveAreaTreeModel;
+	}
+	
+	private JComboBox getCbx_areaTrees() {
+		if (cbx_areaTrees == null) {
+			cbx_areaTrees = new JComboBox();
+			cbx_areaTrees.setPreferredSize(new Dimension(300,25));
+			
+		}
+		return cbx_areaTrees;
+	}
+	
+	private JButton getBtnNewButton() {
+		if (btnNewButton == null) {
+			btnNewButton = new JButton("Load AreaTree");
+			btnNewButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					
+					if(cbx_areaTrees.getItemCount()>0) {
+						
+						Model m;
+						try {
+							m = bdi.getPageAreaModel(new URIImpl(cbx_areaTrees.getSelectedItem().toString())  );
+							BigdataAreaTree bdAreaTree = new BigdataAreaTree(m, browser.getPage().getSourceURL().toString());
+							browser.setAreaTree(bdAreaTree);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+					
+				}
+			});
+		}
+		return btnNewButton;
 	}
 }

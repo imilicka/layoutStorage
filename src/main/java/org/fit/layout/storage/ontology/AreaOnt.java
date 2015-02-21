@@ -22,8 +22,10 @@ public class AreaOnt {
 
 
 	public static final String Area = NS + "Area";
-	public static final String ModelBuilding = NS + "ModelBuilding";
+	public static final String hasAreaTree = NS + "hasAreaTree";
 	public static final String hasTag = NS + "hasTag";
-	public static final String build = NS + "build";
+	public static final String isPartOf = NS + "isPartOf";
+	public static final String parentModel = NS + "parentModel";
+	
 
 }
