@@ -17,20 +17,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 
 import org.fit.layout.api.AreaTreeOperator;
-import org.fit.layout.api.AreaTreeProvider;
-import org.fit.layout.api.BoxTreeProvider;
 import org.fit.layout.classify.FeatureAnalyzer;
 import org.fit.layout.classify.VisualClassifier;
 import org.fit.layout.classify.op.TagEntitiesOperator;
@@ -41,7 +36,6 @@ import org.fit.layout.model.AreaTree;
 import org.fit.layout.model.Page;
 import org.fit.layout.model.Tag;
 import org.fit.layout.storage.BigdataInterface;
-import org.fit.layout.storage.BigdataPageInfo;
 import org.fit.layout.storage.model.BigdataAreaTree;
 import org.fit.layout.storage.model.BigdataPage;
 import org.fit.segm.grouping.SegmentationAreaTree;
@@ -49,7 +43,6 @@ import org.fit.segm.grouping.op.FindLineOperator;
 import org.fit.segm.grouping.op.HomogeneousLeafOperator;
 import org.openrdf.model.Model;
 import org.openrdf.model.impl.URIImpl;
-import org.openrdf.repository.RepositoryException;
 
 
 
@@ -69,18 +62,15 @@ public class StoragePlugin implements BrowserPlugin
     private JButton btn_loadDBData;
     private JPanel tbr_storageSelection;
     private JLabel lbl_urls;
-    private JComboBox<String> cbx_urls;
-    private JLabel lbl_launches;
-    private JComboBox<BigdataPageInfo> cbx_launches;
+    private JComboBox<String> cbx_pages;
     private JButton btn_loadBoxModel;
     private JPanel tbr_control;
     private JButton btn_saveBoxTreeModel;
     private JButton btn_removePage;
     private JButton btn_clearDB;
-    private Boolean oneUrlOccurence = true;
     private JButton btn_saveAreaTreeModel;
     private JComboBox<String> cbx_areaTrees;
-    private JButton btnNewButton;
+    private JButton btn_loadAreaTreeModel;
     
     
 	//=============================
@@ -172,7 +162,7 @@ public class StoragePlugin implements BrowserPlugin
 			btn_loadDBData = new JButton("Establish Connection");
 			btn_loadDBData.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					loadDistinctUrls();
+					loadAllPages();
 				}
 			});
 		}
@@ -186,19 +176,17 @@ public class StoragePlugin implements BrowserPlugin
 	{
 		if (tbr_storageSelection == null) {
 			tbr_storageSelection = new JPanel();
-			tbr_storageSelection.add(getLbl_urls());
-			tbr_storageSelection.add(getCbx_urls());
-			tbr_storageSelection.add(getLbl_launches());
-			tbr_storageSelection.add(getCbx_launches());
+			tbr_storageSelection.add(getLbl_pages());
+			tbr_storageSelection.add(getCbx_pages());
 			tbr_storageSelection.add(getBtn_loadBoxModel());
 			tbr_storageSelection.add(getCbx_areaTrees());
-			tbr_storageSelection.add(getBtnNewButton());
+			tbr_storageSelection.add(getBtn_loadAreaTreeModel());
 			
 		}
 		return tbr_storageSelection;
 	}
 	
-	private JLabel getLbl_urls() 
+	private JLabel getLbl_pages() 
 	{
 		if (lbl_urls == null) {
 			lbl_urls = new JLabel("URLs");
@@ -206,112 +194,38 @@ public class StoragePlugin implements BrowserPlugin
 		return lbl_urls;
 	}
 	
-	private JComboBox<String> getCbx_urls() 
+	private JComboBox<String> getCbx_pages() 
 	{
-		if (cbx_urls == null) {
-			cbx_urls = new JComboBox<String>();
-			cbx_urls.setMaximumRowCount(8);
-			cbx_urls.setPreferredSize(new Dimension(300,25));
-			cbx_urls.addActionListener(new ActionListener() {
+		if (cbx_pages == null) {
+			cbx_pages = new JComboBox<String>();
+			cbx_pages.setMaximumRowCount(8);
+			cbx_pages.setPreferredSize(new Dimension(300,25));
+			cbx_pages.addActionListener(new ActionListener() {
 				
 				public void actionPerformed(ActionEvent e) {
 					
-					if(cbx_launches==null)
-			    		return;
-			    	
-					cbx_launches.removeAllItems();
 					cbx_areaTrees.removeAllItems();
 			    	
-			    	if( cbx_urls.getItemCount()>0 ) {
-			    		
-			    		cbx_launches.setEnabled(true);
+			    	if( cbx_pages.getItemCount()>0 ) 
+			    	{
 			    		cbx_areaTrees.setEnabled(true);
 			    		
-			    		
-			    		List<BigdataPageInfo> launchList = bdi.getPagesForUrl(cbx_urls.getSelectedItem().toString() ); 
-			    		
 			    		try {
-							List<String> areaTrees = bdi.getPageAreaModels(cbx_urls.getSelectedItem().toString() );
+							List<String> areaTrees = bdi.getAreaTreeIdsForPageId(cbx_pages.getSelectedItem().toString() );
 							for(String area: areaTrees) {
-								System.out.println("area" + area);
 								cbx_areaTrees.addItem(area);
 							}
 						} catch (Exception e1) {
-							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						} 
-			    		
-			    		
-			    		
-			        	//fill combobox with launches
-			        	for(BigdataPageInfo launch : launchList) {
-			        		cbx_launches.addItem( launch );
-			        	}
 			    	}
 			    	else {
-			    		cbx_launches.setEnabled(false);
+			    		cbx_areaTrees.setEnabled(false);
 			    	}
-					
 				}
 			});
 		}
-		return cbx_urls;
-	}
-	
-	private JLabel getLbl_launches() 
-	{
-		if (lbl_launches == null) {
-			lbl_launches = new JLabel("Launches");
-			
-			if(oneUrlOccurence) {
-				lbl_launches.setVisible(false);
-			}
-		}
-		return lbl_launches;
-	}
-	
-	private JComboBox<BigdataPageInfo> getCbx_launches() 
-	{
-		if (cbx_launches == null) {
-			cbx_launches = new JComboBox<BigdataPageInfo>();
-			cbx_launches.setMaximumRowCount(0);
-			cbx_launches.setPreferredSize(new Dimension(300,25));
-			cbx_launches.setRenderer(new DefaultListCellRenderer() {
-
-				private static final long serialVersionUID = 2525351383652612796L;
-
-					@Override 
-		            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-		                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-		                if(value instanceof BigdataPageInfo){
-		                    BigdataPageInfo launch = (BigdataPageInfo) value;
-		                    setText(launch.getDate());
-		                } 
-		                return this;
-		            } 
-		    });
-			cbx_launches.addActionListener(new ActionListener() {
-				
-				public void actionPerformed(ActionEvent e) {
-					
-					if(cbx_launches==null)
-			    		return;
-			    	
-			    	if( cbx_launches.getItemCount()>0 ) {
-			    		btn_loadBoxModel.setEnabled(true);
-			    	}
-			    	else {
-			    		btn_loadBoxModel.setEnabled(false);
-			    	}
-					
-				}
-			});
-		
-			if(oneUrlOccurence) {
-				cbx_launches.setVisible(false);
-			}
-		}
-		return cbx_launches;
+		return cbx_pages;
 	}
 	
 	private JButton getBtn_loadBoxModel() 
@@ -321,23 +235,18 @@ public class StoragePlugin implements BrowserPlugin
 			btn_loadBoxModel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					
-					BigdataPageInfo launch = (BigdataPageInfo) cbx_launches.getSelectedItem();
-	
 			        try {
-			        	
-			        	Model modelStatements = bdi.getPageBoxModelFromTimestamp(launch.getDate().toString());
-						Page page = new BigdataPage(modelStatements, launch.getUrl() );
+			        	String pageId = cbx_pages.getSelectedItem().toString();
+			        	Model modelStatements = bdi.getBoxModelForPageId(pageId);
+						Page page = new BigdataPage(modelStatements, pageId.substring(0, pageId.lastIndexOf("#")) );
 						browser.setPage(page);
 						
 					} catch (Exception e1) {
 						
-						/*
-						JOptionPane.showMessageDialog(mainWindow,
+						JOptionPane.showMessageDialog((Component)browser,
 							    "Cannot load defined launch!",
 							    "Loading Error",
 							    JOptionPane.ERROR_MESSAGE);
-						*/
-						e1.printStackTrace();
 					}
 					
 				}
@@ -350,26 +259,29 @@ public class StoragePlugin implements BrowserPlugin
 	/**
 	 * it loads distinct URLs into ulrsComboBox
 	 */
-	private void loadDistinctUrls() 
+	private void loadAllPages() 
 	{
 		String DBConnectionUrl = tfl_urlRDFDB.getText();
 		
-		cbx_urls.removeAllItems();
+		cbx_pages.removeAllItems();
 		
 		try {
 			bdi = new BigdataInterface(DBConnectionUrl, false);
 			
-			List<String> listURL = bdi.getDistinctUrlPages();
+			List<String> listURL = bdi.getAllPageIds();
 			for(String url : listURL) {
-				cbx_urls.addItem(url);
+				cbx_pages.addItem(url);
 			}
+			
+			getBtn_loadBoxModel().setEnabled(true);
+			getBtn_loadAreaTreeModel().setEnabled(true);
 			
 			getBtn_saveBoxTreeModel().setEnabled(true);
 			getBtn_removePage().setEnabled(true);
 			getBtn_clearDB().setEnabled(true);
 			getBtn_saveAreaTreeModel().setEnabled(true);
-		} 
-		catch (RepositoryException e) {
+		}
+		catch (Exception e) {
 
 			JOptionPane.showMessageDialog((Component) browser,
 				    "There is a problem with DB connection: "+e.getMessage(),
@@ -405,9 +317,9 @@ public class StoragePlugin implements BrowserPlugin
 					Page page = browser.getPage();
 					
 					if(page!=null) {
-						bdi.insertPage(page);
+						bdi.insertPageBoxModel(page);
 						
-						loadDistinctUrls();
+						loadAllPages();
 					}
 					else {
 						/*
@@ -431,7 +343,14 @@ public class StoragePlugin implements BrowserPlugin
 			btn_removePage.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) 
 				{
-					removeSelectedPageLaunch();
+					try {
+						String pageId = cbx_pages.getSelectedItem().toString();
+						bdi.removePage(pageId);
+						
+						loadAllPages();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 			});
 		}
@@ -446,31 +365,13 @@ public class StoragePlugin implements BrowserPlugin
 			btn_clearDB.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					bdi.clearRDFDatabase();
-					loadDistinctUrls();
+					loadAllPages();
 				}
 			});
 		}
 		return btn_clearDB;
 	}
-    
 
-	private void removeSelectedPageLaunch() 
-	{
-		String launchDate = "-";
-
-		try {
-			BigdataPageInfo launch = (BigdataPageInfo) cbx_launches
-					.getSelectedItem();
-			launchDate = launch.getDate().toString();
-
-			bdi.removePage(launchDate);
-			
-			loadDistinctUrls();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
 	public void segmentPage(Page page)
     {
         //area tree
@@ -528,6 +429,10 @@ public class StoragePlugin implements BrowserPlugin
         }
 	}
 	
+	/**
+	 * stores actual 
+	 * @return
+	 */
 	private JButton getBtn_saveAreaTreeModel() {
 		if (btn_saveAreaTreeModel == null) {
 			btn_saveAreaTreeModel = new JButton("Save Area Tree to DB");
@@ -538,10 +443,10 @@ public class StoragePlugin implements BrowserPlugin
 					AreaTree atree = browser.getAreaTree();
 					
 					if(atree!=null && page!=null) {
-						bdi.insertAreaTree( atree , page.getSourceURL().toString() );
+						bdi.insertAreaTree( atree , new URIImpl( cbx_pages.getSelectedItem().toString() ) );
 					}
 					
-					loadDistinctUrls();
+					loadAllPages();
 				}
 			});
 			
@@ -550,30 +455,28 @@ public class StoragePlugin implements BrowserPlugin
 		return btn_saveAreaTreeModel;
 	}
 	
-	private JComboBox getCbx_areaTrees() {
+	private JComboBox<String> getCbx_areaTrees() {
 		if (cbx_areaTrees == null) {
-			cbx_areaTrees = new JComboBox();
+			cbx_areaTrees = new JComboBox<String>();
 			cbx_areaTrees.setPreferredSize(new Dimension(300,25));
 			
 		}
 		return cbx_areaTrees;
 	}
 	
-	private JButton getBtnNewButton() {
-		if (btnNewButton == null) {
-			btnNewButton = new JButton("Load AreaTree");
-			btnNewButton.addActionListener(new ActionListener() {
+	private JButton getBtn_loadAreaTreeModel() {
+		if (btn_loadAreaTreeModel == null) {
+			btn_loadAreaTreeModel = new JButton("Load AreaTree");
+			btn_loadAreaTreeModel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					
 					if(cbx_areaTrees.getItemCount()>0) {
 						
-						Model m;
 						try {
-							m = bdi.getPageAreaModel(new URIImpl(cbx_areaTrees.getSelectedItem().toString())  );
+							Model m = bdi.getAreaModelForAreaTreeId( cbx_areaTrees.getSelectedItem().toString() );
 							BigdataAreaTree bdAreaTree = new BigdataAreaTree(m, browser.getPage().getSourceURL().toString());
 							browser.setAreaTree(bdAreaTree);
 						} catch (Exception e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
@@ -581,6 +484,6 @@ public class StoragePlugin implements BrowserPlugin
 				}
 			});
 		}
-		return btnNewButton;
+		return btn_loadAreaTreeModel;
 	}
 }

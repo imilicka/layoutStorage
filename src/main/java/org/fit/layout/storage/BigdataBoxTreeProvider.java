@@ -26,26 +26,27 @@ import org.xml.sax.SAXException;
  */
 public class BigdataBoxTreeProvider extends BaseBoxTreeProvider
 {
-    private URL url2;
+    private URL urlDb;
     private URIImpl pageId;
    
     
-    private final String[] paramNames = { "url2", "pageId" };
+    private final String[] paramNames = { "urlDb", "pageId" };
     private final ValueType[] paramTypes = { ValueType.STRING, ValueType.STRING };
 
-    public BigdataBoxTreeProvider()
+    public BigdataBoxTreeProvider() throws MalformedURLException
     {
-		setUrl2("http://localhost:8080/bigdata/sparql");
-		setPageId("http://www.idnes.cz#20150220070323");
+		this.urlDb = new URL("http://localhost:8080/bigdata/sparql");
+		pageId = null;
     }
+
     
-    public BigdataBoxTreeProvider(URL url2, URIImpl pageId)
+    public BigdataBoxTreeProvider(URL urlDb, URIImpl pageId)
     {
-        this.url2 = url2;
+        this.urlDb = urlDb;
         this.pageId = pageId;
     }
 
-    
+
     public String getId()
     {
         return "FitLayout.Bigdata";
@@ -75,22 +76,22 @@ public class BigdataBoxTreeProvider extends BaseBoxTreeProvider
         return paramTypes;
     }
 
-    public URL getUrl2()
+    public URL getUrlDb()
     {
-        return url2;
+        return urlDb;
     }
 
-    public void setUrl2(URL url)
+    public void setUrlDb(URL urlDb)
     {
-        this.url2 = url;
+        this.urlDb = urlDb;
     }
     
-    public void setUrl2(String url2)
+    public void setUrlDb(String urlDb)
     {
         try {
-            this.url2 = new URL(url2);
+            this.urlDb = new URL(urlDb);
         } catch (MalformedURLException e) {
-            throw new IllegalArgumentException("Malformed URL: " + url2);
+            throw new IllegalArgumentException("Malformed URL: " + urlDb);
         }
     }
 
@@ -113,10 +114,10 @@ public class BigdataBoxTreeProvider extends BaseBoxTreeProvider
     public Page getPage() 
     {
     	try {
-			BigdataInterface bdi = new BigdataInterface(url2.toString(), false);
+			BigdataInterface bdi = new BigdataInterface(urlDb.toString(), false);
 			
 			//Model m = bdi.getPageBoxModelFromNode(pageId.toString());
-			Model m = bdi.getPageBoxModelFromNode(pageId.toString());
+			Model m = bdi.getBoxModelForPageId(pageId.toString());
 			
 			BigdataPage bdmb = new BigdataPage(m, "http://www.idnes.cz");
 			return bdmb;
@@ -129,16 +130,6 @@ public class BigdataBoxTreeProvider extends BaseBoxTreeProvider
 			e.printStackTrace();
 		}
     	
-    	/*
-        CSSBoxTreeBuilder build = new CSSBoxTreeBuilder(new Dimension(width, height));
-        try {
-            build.parse(url);
-            return build.getPage();
-        } catch (IOException | SAXException e) {
-            e.printStackTrace();
-            return null;
-        }
-        */
     	return null;
     }
 

@@ -25,10 +25,7 @@ public class BigdataTest {
     public void correctRun() { 
     	
 			try {
-				BigdataInterface bdi = new BigdataInterface();
-				bdi.addNamespace("marmil");
-				
-				
+				BigdataInterface bdi = new BigdataInterface();		
 				
 				System.out.println("no problem");
 			} catch (RepositoryException e) {
@@ -47,10 +44,6 @@ public class BigdataTest {
     	
 			try {
 				BigdataInterface bdi = new BigdataInterface();
-				RepositoryResult<Namespace> namespaces = bdi.getAllNamespaces();
-				
-				//System.out.println ( "pocet NS:" + namespaces. asList().size() );
-				
 				
 				System.out.println("no problem");
 			} catch (RepositoryException e) {
