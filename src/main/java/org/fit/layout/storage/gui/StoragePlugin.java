@@ -12,10 +12,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.Vector;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -25,22 +22,13 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
-import org.fit.layout.api.AreaTreeOperator;
-import org.fit.layout.classify.FeatureAnalyzer;
-import org.fit.layout.classify.VisualClassifier;
-import org.fit.layout.classify.op.TagEntitiesOperator;
-import org.fit.layout.classify.op.VisualClassificationOperator;
 import org.fit.layout.gui.Browser;
 import org.fit.layout.gui.BrowserPlugin;
 import org.fit.layout.model.AreaTree;
 import org.fit.layout.model.Page;
-import org.fit.layout.model.Tag;
 import org.fit.layout.storage.BigdataInterface;
 import org.fit.layout.storage.model.BigdataAreaTree;
 import org.fit.layout.storage.model.BigdataPage;
-import org.fit.segm.grouping.SegmentationAreaTree;
-import org.fit.segm.grouping.op.FindLineOperator;
-import org.fit.segm.grouping.op.HomogeneousLeafOperator;
 import org.openrdf.model.Model;
 import org.openrdf.model.impl.URIImpl;
 
@@ -372,62 +360,6 @@ public class StoragePlugin implements BrowserPlugin
 		return btn_clearDB;
 	}
 
-	public void segmentPage(Page page)
-    {
-        //area tree
-		SegmentationAreaTree atree = new SegmentationAreaTree(page);
-        atree.findBasicAreas();
-        
-        //apply the area tree operations
-        Vector<AreaTreeOperator> operations = new Vector<AreaTreeOperator>();
-        operations.add(new FindLineOperator(false, 1.5f));
-        operations.add(new HomogeneousLeafOperator());
-        ////operations.add(new FindColumnsOperator());
-        //operations.add(new SuperAreaOperator(2)); //TODO misto pass limit by se hodilo nejake omezeni granularity na zaklade vlastnosti oblasti
-        ////operations.add(new CollapseAreasOperator());
-        //operations.add(new ReorderOperator());
-        
-        System.out.println("OPERATORS");
-        for (AreaTreeOperator op : operations)
-        {
-            System.out.println(op.toString());
-            op.apply(atree);
-        }
-        
-        //tagging
-        AreaTreeOperator tagop = new TagEntitiesOperator();
-        tagop.apply(atree);
-       
-        /*//visual features
-        features = new FeatureAnalyzer(atree.getRoot());
-        //if (weights != null)
-        //    features.setWeights(weights);
-        
-        //visual classification
-        vcls = new VisualClassifier("train_mix.arff", 1);
-        //vcls = new VisualClassifier("train_reuters2.arff", 1);
-        vcls.classifyTree(atree.getRoot(), features);*/
-        
-        VisualClassificationOperator vcop = new VisualClassificationOperator("train_mix.arff", 1);
-        vcop.apply(atree);
-        FeatureAnalyzer features = vcop.getFeatures();
-        VisualClassifier vcls = vcop.getVisualClassifier();
-        
-        Set<Tag> tags = atree.getUsedTags();
-        showAllTags(tags);
-        
-        System.out.println("DONE");
-        
-    }
-	
-	private void showAllTags(Set<Tag> tags) {
-		Iterator<Tag> it = tags.iterator();
-        while(it.hasNext()) {
-        	Tag t = it.next();
-        	System.out.println( t.getValue() );
-        	
-        }
-	}
 	
 	/**
 	 * stores actual 
