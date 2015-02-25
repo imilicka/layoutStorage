@@ -29,15 +29,10 @@ import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
 
 import org.fit.layout.api.AreaTreeOperator;
-import org.fit.layout.classify.FeatureAnalyzer;
-import org.fit.layout.classify.VisualClassifier;
-import org.fit.layout.classify.op.TagEntitiesOperator;
-import org.fit.layout.classify.op.VisualClassificationOperator;
 import org.fit.layout.cssbox.CSSBoxTreeBuilder;
 import org.fit.layout.gui.Browser;
 import org.fit.layout.gui.BrowserPlugin;
@@ -240,25 +235,6 @@ public class MultiPageAnalyzerPlugin implements BrowserPlugin {
 			System.out.println(op.toString());
 			op.apply(atree);
 		}
-
-		// tagging
-		AreaTreeOperator tagop = new TagEntitiesOperator();
-		tagop.apply(atree);
-
-		/*
-		 * //visual features features = new FeatureAnalyzer(atree.getRoot());
-		 * //if (weights != null) // features.setWeights(weights);
-		 * 
-		 * //visual classification vcls = new VisualClassifier("train_mix.arff",
-		 * 1); //vcls = new VisualClassifier("train_reuters2.arff", 1);
-		 * vcls.classifyTree(atree.getRoot(), features);
-		 */
-
-		VisualClassificationOperator vcop = new VisualClassificationOperator(
-				"train_mix.arff", 1);
-		vcop.apply(atree);
-		FeatureAnalyzer features = vcop.getFeatures();
-		VisualClassifier vcls = vcop.getVisualClassifier();
 
 		System.out.println("DONE");
 		

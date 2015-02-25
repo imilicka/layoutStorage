@@ -2,8 +2,8 @@ package org.fit.layout.storage.model;
 
 import java.awt.Color;
 
-import org.fit.layout.classify.TextTag;
 import org.fit.layout.impl.DefaultArea;
+import org.fit.layout.impl.DefaultTag;
 import org.fit.layout.model.Area;
 import org.fit.layout.model.Rectangular;
 import org.fit.layout.storage.ontology.BoxOnt;
@@ -89,7 +89,7 @@ public class BigdataArea extends DefaultArea implements Area {
 				break;
 			case BoxOnt.hasTag:
 				
-				addTag(new TextTag(attribute.getObject().stringValue(), null) , 0);
+				addTag(new DefaultTag("TODO", attribute.getObject().stringValue()) , 0); //TODO set tag type appropriately
 				break;
 			case BoxOnt.height:
 				height = Integer.parseInt( attribute.getObject().stringValue() );
