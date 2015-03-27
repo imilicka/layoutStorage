@@ -10,8 +10,8 @@ import org.fit.layout.model.Area;
 import org.fit.layout.model.AreaTree;
 import org.fit.layout.model.Rectangular;
 import org.fit.layout.model.Tag;
-import org.fit.layout.storage.ontology.AreaOnt;
-import org.fit.layout.storage.ontology.BoxOnt;
+import org.fit.layout.storage.ontology.BOX;
+import org.fit.layout.storage.ontology.SEGM;
 import org.openrdf.model.Graph;
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.LinkedHashModel;
@@ -52,7 +52,7 @@ public class BigdataAreaModelBuilder {
 		this.areaTreeNode = new URIImpl(this.url + "#" + this.uniqueID);
 
 		// it adds root node
-		this.graph.add(this.pageNode, new URIImpl(AreaOnt.hasAreaTree.toString()), this.areaTreeNode);
+		this.graph.add(this.pageNode, new URIImpl(SEGM.hasAreaTree.toString()), this.areaTreeNode);
 
 		
 		addArea(areaTree.getRoot());
@@ -85,22 +85,16 @@ public class BigdataAreaModelBuilder {
 
 		
 		URI individual = new URIImpl(this.url + "#" + this.uniqueID + "-" + id);
-		graph.add(individual, RDF.TYPE, vf.createURI(AreaOnt.Area));
-		graph.add(individual, new URIImpl(BoxOnt.belongsTo), this.pageNode );
-		graph.add(individual, new URIImpl(AreaOnt.isPartOf), this.areaTreeNode );
+		graph.add(individual, RDF.TYPE, SEGM.Area);
+		graph.add(individual, BOX.belongsTo, this.pageNode );
 		
 
 		// appends geometry
 		Rectangular rec = area.getBounds();
-		graph.add(individual, new URIImpl(BoxOnt.height),
-				vf.createLiteral(rec.getHeight()));
-		graph.add(individual, new URIImpl(BoxOnt.width),
-				vf.createLiteral(rec.getWidth()));
-		graph.add(individual, new URIImpl(BoxOnt.positionX),
-				vf.createLiteral(rec.getX1()));
-		graph.add(individual, new URIImpl(BoxOnt.positionY),
-				vf.createLiteral(rec.getY1()));
-		
+		graph.add(individual, BOX.height, vf.createLiteral(rec.getHeight()));
+		graph.add(individual, BOX.width, vf.createLiteral(rec.getWidth()));
+		graph.add(individual, BOX.positionX, vf.createLiteral(rec.getX1()));
+		graph.add(individual, BOX.positionY, vf.createLiteral(rec.getY1()));
 
 		// appends tags
 		if (area.getTags().size() > 0) {
@@ -111,8 +105,7 @@ public class BigdataAreaModelBuilder {
 			for (Tag t : tagKeys) {
 				Float support = tags.get(t);
 				if (support > 0) {
-					graph.add(individual, new URIImpl(BoxOnt.hasTag),
-							vf.createLiteral(t.getValue()));
+					graph.add(individual, SEGM.hasTag, vf.createLiteral(t.getValue()));
 				}
 			}
 		}

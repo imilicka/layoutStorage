@@ -45,9 +45,7 @@ public class BigdataPage extends DefaultPage {
 		try {
 
 			for (Statement s : pageStatements.filter(null, RDF.TYPE, null)) {
-				Model attributes = pageStatements.filter(s.getSubject(), null,
-						null);
-
+				Model attributes = pageStatements.filter(s.getSubject(), null, null);
 				allElements.add(new BigdataBox(attributes));
 			}
 		} catch (Exception ex) {

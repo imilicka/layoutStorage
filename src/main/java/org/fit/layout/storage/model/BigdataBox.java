@@ -1,12 +1,14 @@
 package org.fit.layout.storage.model;
 
 import java.awt.Color;
+
 import org.fit.layout.impl.DefaultBox;
 import org.fit.layout.model.Box;
 import org.fit.layout.model.Rectangular;
-import org.fit.layout.storage.ontology.BoxOnt;
+import org.fit.layout.storage.ontology.BOX;
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
 
 
 /**
@@ -51,72 +53,71 @@ public class BigdataBox extends DefaultBox implements Box {
 	
 	public void setAttribute(Statement attribute) {
 		
-		switch(attribute.getPredicate().toString()) {
-		
-			case BoxOnt.backgroundColor:
-				
-				String bgColor = attribute.getObject().stringValue();
-				//bgColor = bgColor.substring(1,bgColor.length());
-				setBackgroundColor( hex2Rgb( bgColor ) );
-				
-				break;
-			case BoxOnt.backgroundImagePosition:
-				break;
-			case BoxOnt.backgroundImageUrl:
-				break;
-			case BoxOnt.color:
-				
-				String color = attribute.getObject().stringValue();
-				//color = color.substring(1, color.length());
-				setColor(hex2Rgb(color));
-				
-				break;
-			case BoxOnt.fontDecoration:
-				setUnderline(Float.parseFloat( attribute.getObject().stringValue() ));
-				break;
-			case BoxOnt.fontFamily:
-				setFontFamily(attribute.getObject().stringValue());
-				break;
-			case BoxOnt.fontSize:
-				setFontSize(Float.parseFloat( attribute.getObject().stringValue() ));
-				break;
-			case BoxOnt.fontStyle:
-				setFontStyle(Float.parseFloat( attribute.getObject().stringValue() ));
-				break;
-			case BoxOnt.fontWeight:
-				setFontWeight(Float.parseFloat( attribute.getObject().stringValue() ));
-				break;
-			case BoxOnt.hasBottomBorder:
-				setBottomBorder(Integer.parseInt( attribute.getObject().stringValue() ));
-				break;
-			case BoxOnt.hasLeftBorder:
-				setLeftBorder(Integer.parseInt( attribute.getObject().stringValue() ));
-				break;
-			case BoxOnt.hasRightBorder:
-				setRightBorder(Integer.parseInt( attribute.getObject().stringValue() ));
-				break;
-			case BoxOnt.hasTopBorder:
-				setTopBorder(Integer.parseInt( attribute.getObject().stringValue() ));
-				break;
-			case BoxOnt.hasTag:
-				setTagName(attribute.getObject().stringValue());
-				break;
-			case BoxOnt.hasText:
-				setType(Type.TEXT_CONTENT);
-				setText(attribute.getObject().stringValue());
-				break;
-			case BoxOnt.height:
-				height = Integer.parseInt( attribute.getObject().stringValue() );
-				break;
-			case BoxOnt.width:
-				width = Integer.parseInt( attribute.getObject().stringValue() );
-				break;
-			case BoxOnt.positionX:
-				x = Integer.parseInt( attribute.getObject().stringValue() );
-				break;	
-			case BoxOnt.positionY:
-				y = Integer.parseInt( attribute.getObject().stringValue() );
-				break;		
+		final URI uri = attribute.getPredicate();
+	    
+		if (BOX.backgroundColor.equals(uri)) {
+			
+			String bgColor = attribute.getObject().stringValue();
+			//bgColor = bgColor.substring(1,bgColor.length());
+			setBackgroundColor( hex2Rgb( bgColor ) );
+			
+		}
+		else if (BOX.backgroundImagePosition.equals(uri)) {
+		}
+		else if (BOX.backgroundImageUrl.equals(uri)) {
+		}
+		else if (BOX.color.equals(uri)) {
+			
+			String color = attribute.getObject().stringValue();
+			//color = color.substring(1, color.length());
+			setColor(hex2Rgb(color));
+			
+		}
+		else if (BOX.underline.equals(uri)) {
+			setUnderline(Float.parseFloat( attribute.getObject().stringValue() ));
+		}
+        else if (BOX.lineThrough.equals(uri)) {
+            setUnderline(Float.parseFloat( attribute.getObject().stringValue() ));
+        }
+		else if (BOX.fontFamily.equals(uri)) {
+			setFontFamily(attribute.getObject().stringValue());
+		}
+		else if (BOX.fontSize.equals(uri)) {
+			setFontSize(Float.parseFloat( attribute.getObject().stringValue() ));
+		}
+		else if (BOX.fontStyle.equals(uri)) {
+			setFontStyle(Float.parseFloat( attribute.getObject().stringValue() ));
+		}
+		else if (BOX.fontWeight.equals(uri)) {
+			setFontWeight(Float.parseFloat( attribute.getObject().stringValue() ));
+		}
+		else if (BOX.hasBottomBorder.equals(uri)) {
+			setBottomBorder(Integer.parseInt( attribute.getObject().stringValue() ));
+		}
+		else if (BOX.hasLeftBorder.equals(uri)) {
+			setLeftBorder(Integer.parseInt( attribute.getObject().stringValue() ));
+		}
+		else if (BOX.hasRightBorder.equals(uri)) {
+			setRightBorder(Integer.parseInt( attribute.getObject().stringValue() ));
+		}
+		else if (BOX.hasTopBorder.equals(uri)) {
+			setTopBorder(Integer.parseInt( attribute.getObject().stringValue() ));
+		}
+		else if (BOX.hasText.equals(uri)) {
+			setType(Type.TEXT_CONTENT);
+			setText(attribute.getObject().stringValue());
+		}
+		else if (BOX.height.equals(uri)) {
+			height = Integer.parseInt( attribute.getObject().stringValue() );
+		}
+		else if (BOX.width.equals(uri)) {
+			width = Integer.parseInt( attribute.getObject().stringValue() );
+		}
+		else if (BOX.positionX.equals(uri)) {
+			x = Integer.parseInt( attribute.getObject().stringValue() );
+		}	
+		else if (BOX.positionY.equals(uri)) {
+			y = Integer.parseInt( attribute.getObject().stringValue() );
 		}
 	}  
 	

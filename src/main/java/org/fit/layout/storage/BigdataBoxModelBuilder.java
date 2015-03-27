@@ -8,7 +8,7 @@ import org.fit.layout.model.Box;
 import org.fit.layout.model.Box.Type;
 import org.fit.layout.model.Page;
 import org.fit.layout.model.Rectangular;
-import org.fit.layout.storage.ontology.BoxOnt;
+import org.fit.layout.storage.ontology.BOX;
 import org.openrdf.model.Graph;
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.LinkedHashModel;
@@ -63,11 +63,11 @@ public class BigdataBoxModelBuilder {
 
 		// inicialization with launch node
 		this.pageNode = new URIImpl(baseUrl + "#" + this.uniqueID);
-		graph.add(this.pageNode, RDF.TYPE, new URIImpl(BoxOnt.Page));
+		graph.add(this.pageNode, RDF.TYPE, new URIImpl(BOX.Page));
 		graph.add(this.pageNode,
-				new URIImpl(BoxOnt.LaunchDatetime.toString()),
+				BOX.launchDatetime,
 				vf.createLiteral(this.dateTime));
-		graph.add(this.pageNode, new URIImpl(BoxOnt.sourceUrl.toString()),
+		graph.add(this.pageNode, new URIImpl(BOX.sourceUrl.toString()),
 				vf.createLiteral(this.baseUrl));
 
 		return this.pageNode;
@@ -132,25 +132,18 @@ public class BigdataBoxModelBuilder {
 
 		// add BOX individual into graph
 		URI individual = new URIImpl(baseUrl + "#" + this.uniqueID + "-" + id);
-		graph.add(individual, RDF.TYPE, vf.createURI(BoxOnt.Box));
-
-		// unique identificator of box
-		graph.add(individual, new URIImpl(BoxOnt.id.toString()), vf.createLiteral(id));
+		graph.add(individual, RDF.TYPE, BOX.Box);
 
 		// pin to launch node
-		graph.add(individual, new URIImpl(BoxOnt.belongsTo.toString()), this.pageNode);
+		graph.add(individual, BOX.belongsTo, this.pageNode);
 
 		// store position and size of element
 		// Rectangular rec = box.getContentBounds();
 		Rectangular rec = box.getBounds();
-		graph.add(individual, new URIImpl(BoxOnt.height.toString()),
-				vf.createLiteral(rec.getHeight()));
-		graph.add(individual, new URIImpl(BoxOnt.width.toString()),
-				vf.createLiteral(rec.getWidth()));
-		graph.add(individual, new URIImpl(BoxOnt.positionX.toString()),
-				vf.createLiteral(rec.getX1()));
-		graph.add(individual, new URIImpl(BoxOnt.positionY.toString()),
-				vf.createLiteral(rec.getY1()));
+		graph.add(individual, BOX.height, vf.createLiteral(rec.getHeight()));
+		graph.add(individual, BOX.width, vf.createLiteral(rec.getWidth()));
+		graph.add(individual, BOX.positionX, vf.createLiteral(rec.getX1()));
+		graph.add(individual, BOX.positionY, vf.createLiteral(rec.getY1()));
 
 		// it prepares color string to hex definition
 		try {
@@ -165,7 +158,7 @@ public class BigdataBoxModelBuilder {
 
 			graph.add(
 					individual,
-					new URIImpl(BoxOnt.backgroundColor.toString()),
+					new URIImpl(BOX.backgroundColor.toString()),
 					vf.createLiteral("#"
 							+ stringPad(Integer.toHexString(intRed), "00")
 							+ stringPad(Integer.toHexString(intGreen), "00")
@@ -175,24 +168,18 @@ public class BigdataBoxModelBuilder {
 
 		// add text content into element
 		if (box.getType() == Type.TEXT_CONTENT) {
-			graph.add(individual, new URIImpl(BoxOnt.hasText.toString()),
-					vf.createLiteral(box.getText()));
-
-			// font attributes
-			graph.add(individual, new URIImpl(BoxOnt.fontFamily),
-					vf.createLiteral(box.getFontFamily()));
-			graph.add(individual, new URIImpl(BoxOnt.fontSize),
-					vf.createLiteral(box.getFontSize()));
-			graph.add(individual, new URIImpl(BoxOnt.fontWeight),
-					vf.createLiteral(box.getFontWeight()));
-			graph.add(individual, new URIImpl(BoxOnt.fontStyle),
-					vf.createLiteral(box.getFontStyle()));
+			graph.add(individual, BOX.hasText, vf.createLiteral(box.getText()));
 		}
+		// font attributes
+		graph.add(individual, BOX.fontFamily, vf.createLiteral(box.getFontFamily()));
+		graph.add(individual, BOX.fontSize, vf.createLiteral(box.getFontSize()));
+		graph.add(individual, BOX.fontWeight, vf.createLiteral(box.getFontWeight()));
+		graph.add(individual, BOX.fontStyle, vf.createLiteral(box.getFontStyle()));
 
 		String tagName = box.getTagName();
 		if (tagName != null && !tagName.isEmpty()) {
 
-			graph.add(individual, new URIImpl(BoxOnt.hasTag),
+			graph.add(individual, new URIImpl(BOX.hasTag),
 					vf.createLiteral(tagName));
 		}
 
@@ -211,7 +198,7 @@ public class BigdataBoxModelBuilder {
 
 			graph.add(
 					individual,
-					new URIImpl(BoxOnt.color.toString()),
+					new URIImpl(BOX.color.toString()),
 					vf.createLiteral("#"
 							+ stringPad(Integer.toHexString(intRed), "00")
 							+ stringPad(Integer.toHexString(intGreen), "00")
