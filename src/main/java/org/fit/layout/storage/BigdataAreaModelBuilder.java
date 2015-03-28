@@ -8,6 +8,8 @@ import java.util.Set;
 
 import org.fit.layout.model.Area;
 import org.fit.layout.model.AreaTree;
+import org.fit.layout.model.LogicalArea;
+import org.fit.layout.model.LogicalAreaTree;
 import org.fit.layout.model.Rectangular;
 import org.fit.layout.model.Tag;
 import org.fit.layout.storage.ontology.BOX;
@@ -20,21 +22,20 @@ import org.openrdf.model.vocabulary.RDF;
 
 public class BigdataAreaModelBuilder {
 
-	Graph graph = null;
-	ValueFactoryImpl vf;
-	String url;
-	String uniqueID;
-	URI pageNode;
-	URI areaTreeNode;
+	private Graph graph = null;
+	private ValueFactoryImpl vf;
+	private String url;
+	private String uniqueID;
+	private URI areaTreeNode;
+	private int logAreaCnt;
 
-	public BigdataAreaModelBuilder(AreaTree areaTree, URI pageNode, String url) {
+	public BigdataAreaModelBuilder(AreaTree areaTree, LogicalAreaTree logicalTree, URI pageNode, String url) {
 		
 		graph = new LinkedHashModel();
 		vf = ValueFactoryImpl.getInstance();
-		this.pageNode = pageNode;
 		this.url = url;
 
-		createAreaTreeModel(pageNode, areaTree);
+		createAreaTreeModel(pageNode, areaTree, logicalTree);
 	}
 
 	public Graph getGraph() {
@@ -45,7 +46,7 @@ public class BigdataAreaModelBuilder {
 	//============================================
 	
 	
-	private void createAreaTreeModel(URI pageNode, AreaTree areaTree) {
+	private void createAreaTreeModel(URI pageNode, AreaTree areaTree, LogicalAreaTree logicalTree) {
 		
 		uniqueID = getUniqueId();
 		areaTreeNode = vf.createURI(this.url + "#" + this.uniqueID);
@@ -53,7 +54,13 @@ public class BigdataAreaModelBuilder {
 		graph.add(areaTreeNode, SEGM.sourcePage, pageNode);
 		
 		addArea(areaTree.getRoot());
-		insertAllAreas( areaTree.getRoot().getChildAreas() );
+		insertAllAreas(areaTree.getRoot().getChildAreas());
+		
+		if (logicalTree != null)
+		{
+    		URI p = addLogicalArea(logicalTree.getRoot(), null);
+    		insertAllLogicalAreas(logicalTree.getRoot().getChildAreas(), p);
+		}
 	}
 
 	/**
@@ -70,6 +77,17 @@ public class BigdataAreaModelBuilder {
 			insertAllAreas(area.getChildAreas());
 		}
 	}
+
+    private void insertAllLogicalAreas(List<LogicalArea> areas, URI parent) {
+        
+        if(areas==null)
+            return;
+        
+        for(LogicalArea area : areas) {
+            URI p = addLogicalArea(area, parent);
+            insertAllLogicalAreas(area.getChildAreas(), p);
+        }
+    }
 
 	/**
 	 * adds area info model
@@ -123,6 +141,18 @@ public class BigdataAreaModelBuilder {
 		
 	}
 
+    private URI addLogicalArea(LogicalArea area, URI parent) {
+
+        final URI individual = getLogicalAreaUri(logAreaCnt++);
+        graph.add(individual, RDF.TYPE, SEGM.LogicalArea);
+        graph.add(individual, SEGM.belongsTo, areaTreeNode);
+        graph.add(individual, SEGM.hasText, vf.createLiteral(area.getText()));
+        if (parent != null)
+            graph.add(individual, SEGM.isSubordinateTo, parent);
+        //addTag(area, individual, area); //TODO
+        return individual;
+    }
+    
 	public void addTag(Area area, URI areaNode, Tag tag, float support) {
 	    URI tagNode = getTagUri(area, tag);
 	    graph.add(tagNode, RDF.TYPE, SEGM.Tag);
@@ -136,6 +166,10 @@ public class BigdataAreaModelBuilder {
 	    return vf.createURI(url + "#" + uniqueID + "-" + area.getId());
 	}
 	
+    public URI getLogicalAreaUri(int cnt) {
+        return vf.createURI(url + "#" + uniqueID + "-log-" + cnt);
+    }
+    
 	public URI getTagUri(Area area, Tag tag) {
         return vf.createURI(url + "#" + uniqueID + "-" + area.getId()
                 + "-" + tag.getType() + "." + tag.getValue());

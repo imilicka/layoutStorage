@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.fit.layout.model.AreaTree;
+import org.fit.layout.model.LogicalAreaTree;
 import org.fit.layout.model.Page;
 import org.fit.layout.storage.ontology.BOX;
 import org.fit.layout.storage.ontology.SEGM;
@@ -314,12 +315,12 @@ public class BigdataInterface {
 	 * @param atree
 	 * @param pageId
 	 */
-	public void insertAreaTree(AreaTree atree, URIImpl pageId) {
+	public void insertAreaTree(AreaTree atree, LogicalAreaTree ltree, URIImpl pageId) {
 		
 		try {
 			String actualUrl = pageId.toString().substring(0, pageId.toString().lastIndexOf("#"));
 			
-			BigdataAreaModelBuilder buildingModel = new BigdataAreaModelBuilder(atree, pageId, actualUrl);
+			BigdataAreaModelBuilder buildingModel = new BigdataAreaModelBuilder(atree, ltree, pageId, actualUrl);
 			insertGraph(buildingModel.getGraph());
 			
 		} catch (Exception e) {
