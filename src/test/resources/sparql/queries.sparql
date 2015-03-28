@@ -1,0 +1,4 @@
+PREFIX box: <http://fitlayout.github.io/ontology/render.owl#>
+PREFIX segm: <http://fitlayout.github.io/ontology/segmentation.owl#>
+
+SELECT ?s ?p ?o WHERE { ?s segm:hasTag ?o }

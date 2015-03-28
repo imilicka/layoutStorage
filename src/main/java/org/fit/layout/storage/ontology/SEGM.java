@@ -24,6 +24,20 @@ public class SEGM {
 	public static final URI Area;
 
 	/**
+	 * {@code http://fitlayout.github.io/ontology/segmentation.owl#AreaTree}.
+	 *
+	 * @see <a href="http://fitlayout.github.io/ontology/segmentation.owl#AreaTree">AreaTree</a>
+	 */
+	public static final URI AreaTree;
+
+	/**
+	 * {@code http://fitlayout.github.io/ontology/segmentation.owl#belongsTo}.
+	 *
+	 * @see <a href="http://fitlayout.github.io/ontology/segmentation.owl#belongsTo">belongsTo</a>
+	 */
+	public static final URI belongsTo;
+
+	/**
 	 * {@code http://fitlayout.github.io/ontology/segmentation.owl#establishes}.
 	 *
 	 * @see <a href="http://fitlayout.github.io/ontology/segmentation.owl#establishes">establishes</a>
@@ -87,6 +101,13 @@ public class SEGM {
 	public static final URI LogicalArea;
 
 	/**
+	 * {@code http://fitlayout.github.io/ontology/segmentation.owl#sourcePage}.
+	 *
+	 * @see <a href="http://fitlayout.github.io/ontology/segmentation.owl#sourcePage">sourcePage</a>
+	 */
+	public static final URI sourcePage;
+
+	/**
 	 * {@code http://fitlayout.github.io/ontology/segmentation.owl#Tag}.
 	 *
 	 * @see <a href="http://fitlayout.github.io/ontology/segmentation.owl#Tag">Tag</a>
@@ -97,6 +118,8 @@ public class SEGM {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
 
 		Area = factory.createURI(SEGM.NAMESPACE, "Area");
+		AreaTree = factory.createURI(SEGM.NAMESPACE, "AreaTree");
+		belongsTo = factory.createURI(SEGM.NAMESPACE, "belongsTo");
 		establishes = factory.createURI(SEGM.NAMESPACE, "establishes");
 		hasName = factory.createURI(SEGM.NAMESPACE, "hasName");
 		hasSupport = factory.createURI(SEGM.NAMESPACE, "hasSupport");
@@ -106,6 +129,7 @@ public class SEGM {
 		isChildOf = factory.createURI(SEGM.NAMESPACE, "isChildOf");
 		isSubordinateTo = factory.createURI(SEGM.NAMESPACE, "isSubordinateTo");
 		LogicalArea = factory.createURI(SEGM.NAMESPACE, "LogicalArea");
+		sourcePage = factory.createURI(SEGM.NAMESPACE, "sourcePage");
 		Tag = factory.createURI(SEGM.NAMESPACE, "Tag");
 	}
 
