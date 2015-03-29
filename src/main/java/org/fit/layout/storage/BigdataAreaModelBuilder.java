@@ -154,7 +154,8 @@ public class BigdataAreaModelBuilder {
         graph.add(individual, SEGM.hasText, vf.createLiteral(area.getText()));
         if (parent != null)
             graph.add(individual, SEGM.isSubordinateTo, parent);
-        //addTag(area, individual, area); //TODO
+        if (area.getMainTag() != null)
+            graph.add(individual, SEGM.hasTag, getTagUri(area.getMainTag()));
         return individual;
     }
     
@@ -179,7 +180,7 @@ public class BigdataAreaModelBuilder {
 	}
 	
     public URI getTagUri(Tag tag) {
-        return vf.createURI(SEGM.NAMESPACE, getTagDesc(tag));
+        return vf.createURI(SEGM.NAMESPACE, "tag-" + getTagDesc(tag));
     }
     
     public String getTagDesc(Tag tag) {
