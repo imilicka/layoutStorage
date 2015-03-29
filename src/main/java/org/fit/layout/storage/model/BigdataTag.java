@@ -17,20 +17,13 @@ import org.openrdf.model.URI;
  */
 public class BigdataTag extends DefaultTag
 {
-    private float support;
     
     public BigdataTag(Model attributes)
     {
         super("");
-        support = 1.0f;
         for(Statement attribute : attributes ) {
             setAttribute(attribute);
         }
-    }
-    
-    public float getSupport()
-    {
-        return support;
     }
     
     public void setAttribute(Statement attribute) {
@@ -42,9 +35,6 @@ public class BigdataTag extends DefaultTag
         }
         else if (SEGM.hasType.equals(uri)) {
             setType(attribute.getObject().stringValue());
-        }
-        else if (SEGM.hasSupport.equals(uri)) {
-            support = Float.valueOf(attribute.getObject().stringValue());
         }
     }
     

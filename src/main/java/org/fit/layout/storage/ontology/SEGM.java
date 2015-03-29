@@ -52,13 +52,6 @@ public class SEGM {
 	public static final URI hasName;
 
 	/**
-	 * {@code http://fitlayout.github.io/ontology/segmentation.owl#hasSupport}.
-	 *
-	 * @see <a href="http://fitlayout.github.io/ontology/segmentation.owl#hasSupport">hasSupport</a>
-	 */
-	public static final URI hasSupport;
-
-	/**
 	 * {@code http://fitlayout.github.io/ontology/segmentation.owl#hasTag}.
 	 *
 	 * @see <a href="http://fitlayout.github.io/ontology/segmentation.owl#hasTag">hasTag</a>
@@ -108,11 +101,25 @@ public class SEGM {
 	public static final URI sourcePage;
 
 	/**
+	 * {@code http://fitlayout.github.io/ontology/segmentation.owl#support}.
+	 *
+	 * @see <a href="http://fitlayout.github.io/ontology/segmentation.owl#support">support</a>
+	 */
+	public static final URI support;
+
+	/**
 	 * {@code http://fitlayout.github.io/ontology/segmentation.owl#Tag}.
 	 *
 	 * @see <a href="http://fitlayout.github.io/ontology/segmentation.owl#Tag">Tag</a>
 	 */
 	public static final URI Tag;
+
+	/**
+	 * {@code http://fitlayout.github.io/ontology/segmentation.owl#tagSupport}.
+	 *
+	 * @see <a href="http://fitlayout.github.io/ontology/segmentation.owl#tagSupport">tagSupport</a>
+	 */
+	public static final URI tagSupport;
 
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
@@ -122,7 +129,6 @@ public class SEGM {
 		belongsTo = factory.createURI(SEGM.NAMESPACE, "belongsTo");
 		establishes = factory.createURI(SEGM.NAMESPACE, "establishes");
 		hasName = factory.createURI(SEGM.NAMESPACE, "hasName");
-		hasSupport = factory.createURI(SEGM.NAMESPACE, "hasSupport");
 		hasTag = factory.createURI(SEGM.NAMESPACE, "hasTag");
 		hasText = factory.createURI(SEGM.NAMESPACE, "hasText");
 		hasType = factory.createURI(SEGM.NAMESPACE, "hasType");
@@ -130,7 +136,9 @@ public class SEGM {
 		isSubordinateTo = factory.createURI(SEGM.NAMESPACE, "isSubordinateTo");
 		LogicalArea = factory.createURI(SEGM.NAMESPACE, "LogicalArea");
 		sourcePage = factory.createURI(SEGM.NAMESPACE, "sourcePage");
+		support = factory.createURI(SEGM.NAMESPACE, "support");
 		Tag = factory.createURI(SEGM.NAMESPACE, "Tag");
+		tagSupport = factory.createURI(SEGM.NAMESPACE, "tagSupport");
 	}
 
 	private SEGM() {

@@ -117,8 +117,13 @@ public class BigdataAreaModelBuilder {
 			Set<Tag> tagKeys = tags.keySet();
 			for (Tag t : tagKeys) {
 				Float support = tags.get(t);
-				if (support != null && support > 0) {
-				    addTag(area, individual, t, support);
+				if (support != null && support > 0.0f) {
+				    final URI tagUri = getTagUri(t);
+				    graph.add(individual, SEGM.hasTag, tagUri);
+				    final URI supUri = getTagSupportUri(area, t);
+				    graph.add(individual, SEGM.tagSupport, supUri);
+				    graph.add(supUri, SEGM.support, vf.createLiteral(support));
+				    graph.add(supUri, SEGM.hasTag, tagUri);
 				}
 			}
 		}
@@ -153,13 +158,11 @@ public class BigdataAreaModelBuilder {
         return individual;
     }
     
-	public void addTag(Area area, URI areaNode, Tag tag, float support) {
-	    URI tagNode = getTagUri(area, tag);
+	public void addTag(Tag tag) {
+	    URI tagNode = getTagUri(tag);
 	    graph.add(tagNode, RDF.TYPE, SEGM.Tag);
 	    graph.add(tagNode, SEGM.hasType, vf.createLiteral(tag.getType()));
         graph.add(tagNode, SEGM.hasName, vf.createLiteral(tag.getValue()));
-        graph.add(tagNode, SEGM.hasSupport, vf.createLiteral(support));
-        graph.add(areaNode, SEGM.hasTag, tagNode);
 	}
 	
 	public URI getAreaUri(Area area) {
@@ -170,11 +173,19 @@ public class BigdataAreaModelBuilder {
         return vf.createURI(url + "#" + uniqueID + "-log-" + cnt);
     }
     
-	public URI getTagUri(Area area, Tag tag) {
+	public URI getTagSupportUri(Area area, Tag tag) {
         return vf.createURI(url + "#" + uniqueID + "-" + area.getId()
-                + "-" + tag.getType() + "." + tag.getValue());
+                + "-" + getTagDesc(tag));
 	}
 	
+    public URI getTagUri(Tag tag) {
+        return vf.createURI(SEGM.NAMESPACE, getTagDesc(tag));
+    }
+    
+    public String getTagDesc(Tag tag) {
+        return tag.getType().replaceAll("\\.", "-") + "--" + tag.getValue();
+    }
+    
 	/**
 	 * gets unique id for areaTree
 	 * @return
