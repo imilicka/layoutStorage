@@ -3,12 +3,18 @@ PREFIX segm: <http://fitlayout.github.io/ontology/segmentation.owl#>
 
 SELECT ?s ?p ?o WHERE { ?s segm:hasTag ?o }
 
+SELECT ?vol WHERE { ?vol segm:hasTag segm:tag-ESWC--root }
+
 SELECT ?author ?title
 WHERE { 
   ?a rdf:type segm:LogicalArea .
   ?t rdf:type segm:LogicalArea .
-  ?a segm:isSubordinateTo ?t .
+  ?a segm:isSubordinateTo ?paper .
+  ?t segm:isSubordinateTo ?paper .
   ?a segm:hasText ?author .
   ?t segm:hasText ?title .
-  ?a segm:hasTag segm:tag-ESWC--authors
+  ?a segm:hasTag segm:tag-ESWC--authors .
+  ?t segm:hasTag segm:tag-ESWC--title
 }
+
+CONSTRUCT { ?vol segm:hasTag ?t } WHERE { ?vol segm:hasTag ?t }
