@@ -6,9 +6,11 @@ import org.fit.layout.impl.DefaultArea;
 import org.fit.layout.impl.DefaultTag;
 import org.fit.layout.model.Area;
 import org.fit.layout.model.Rectangular;
-import org.fit.layout.storage.ontology.BoxOnt;
+import org.fit.layout.storage.ontology.BOX;
+import org.fit.layout.storage.ontology.SEGM;
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
 
 
 /**
@@ -51,59 +53,64 @@ public class BigdataArea extends DefaultArea implements Area {
 	
 	public void setAttribute(Statement attribute) {
 		
-		switch(attribute.getPredicate().toString()) {
-		
-			case BoxOnt.backgroundColor:
-				
-				String bgColor = attribute.getObject().stringValue();
-				setBackgroundColor( hex2Rgb( bgColor ) );
-				
-				break;
-			case BoxOnt.backgroundImagePosition:
-				break;
-			case BoxOnt.backgroundImageUrl:
-				break;
-			case BoxOnt.fontDecoration:
-				setUnderline(Float.parseFloat( attribute.getObject().stringValue() ));
-				break;
-			case BoxOnt.fontSize:
-				setFontSize(Float.parseFloat( attribute.getObject().stringValue() ));
-				break;
-			case BoxOnt.fontStyle:
-				setFontStyle(Float.parseFloat( attribute.getObject().stringValue() ));
-				break;
-			case BoxOnt.fontWeight:
-				setFontWeight(Float.parseFloat( attribute.getObject().stringValue() ));
-				break;
-			case BoxOnt.hasBottomBorder:
-				setBottomBorder(Integer.parseInt( attribute.getObject().stringValue() ));
-				break;
-			case BoxOnt.hasLeftBorder:
-				setLeftBorder(Integer.parseInt( attribute.getObject().stringValue() ));
-				break;
-			case BoxOnt.hasRightBorder:
-				setRightBorder(Integer.parseInt( attribute.getObject().stringValue() ));
-				break;
-			case BoxOnt.hasTopBorder:
-				setTopBorder(Integer.parseInt( attribute.getObject().stringValue() ));
-				break;
-			case BoxOnt.hasTag:
-				
-				addTag(new DefaultTag("TODO", attribute.getObject().stringValue()) , 0); //TODO set tag type appropriately
-				break;
-			case BoxOnt.height:
-				height = Integer.parseInt( attribute.getObject().stringValue() );
-				break;
-			case BoxOnt.width:
-				width = Integer.parseInt( attribute.getObject().stringValue() );
-				break;
-			case BoxOnt.positionX:
-				x = Integer.parseInt( attribute.getObject().stringValue() );
-				break;	
-			case BoxOnt.positionY:
-				y = Integer.parseInt( attribute.getObject().stringValue() );
-				break;		
-		}
+        final URI uri = attribute.getPredicate();
+        
+        if (BOX.backgroundColor.equals(uri)) {
+            
+            String bgColor = attribute.getObject().stringValue();
+            //bgColor = bgColor.substring(1,bgColor.length());
+            setBackgroundColor( hex2Rgb( bgColor ) );
+            
+        }
+        else if (BOX.backgroundImagePosition.equals(uri)) {
+        }
+        else if (BOX.backgroundImageUrl.equals(uri)) {
+        }
+        else if (BOX.underline.equals(uri)) {
+            setUnderline(Float.parseFloat( attribute.getObject().stringValue() ));
+        }
+        else if (BOX.lineThrough.equals(uri)) {
+            setUnderline(Float.parseFloat( attribute.getObject().stringValue() ));
+        }
+        else if (BOX.fontSize.equals(uri)) {
+            setFontSize(Float.parseFloat( attribute.getObject().stringValue() ));
+        }
+        else if (BOX.fontStyle.equals(uri)) {
+            setFontStyle(Float.parseFloat( attribute.getObject().stringValue() ));
+        }
+        else if (BOX.fontWeight.equals(uri)) {
+            setFontWeight(Float.parseFloat( attribute.getObject().stringValue() ));
+        }
+        else if (BOX.hasBottomBorder.equals(uri)) {
+            setBottomBorder(Integer.parseInt( attribute.getObject().stringValue() ));
+        }
+        else if (BOX.hasLeftBorder.equals(uri)) {
+            setLeftBorder(Integer.parseInt( attribute.getObject().stringValue() ));
+        }
+        else if (BOX.hasRightBorder.equals(uri)) {
+            setRightBorder(Integer.parseInt( attribute.getObject().stringValue() ));
+        }
+        else if (BOX.hasTopBorder.equals(uri)) {
+            setTopBorder(Integer.parseInt( attribute.getObject().stringValue() ));
+        }
+        else if (BOX.height.equals(uri)) {
+            height = Integer.parseInt( attribute.getObject().stringValue() );
+        }
+        else if (BOX.width.equals(uri)) {
+            width = Integer.parseInt( attribute.getObject().stringValue() );
+        }
+        else if (BOX.positionX.equals(uri)) {
+            x = Integer.parseInt( attribute.getObject().stringValue() );
+        }   
+        else if (BOX.positionY.equals(uri)) {
+            y = Integer.parseInt( attribute.getObject().stringValue() );
+        }
+        
+        
+        else if (SEGM.hasTag.equals(uri)) {
+            addTag(new DefaultTag("TODO", attribute.getObject().stringValue()) , 0); //TODO set tag type appropriately
+        }
+
 	}  
 	
 	

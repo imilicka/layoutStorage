@@ -8,11 +8,10 @@ import org.fit.layout.model.Box;
 import org.fit.layout.model.Box.Type;
 import org.fit.layout.model.Page;
 import org.fit.layout.model.Rectangular;
-import org.fit.layout.storage.ontology.BoxOnt;
+import org.fit.layout.storage.ontology.BOX;
 import org.openrdf.model.Graph;
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.RDF;
 
@@ -27,48 +26,41 @@ public class BigdataBoxModelBuilder {
 	private Graph graph;
 	private String baseUrl;
 	private ValueFactoryImpl vf;
-	private String uniqueID;
-	private String dateTime;
-	private URIImpl pageNode;
+	private String launchID;
+	private URI pageNode;
 
 	public BigdataBoxModelBuilder(Page page) {
 
 		baseUrl = page.getSourceURL().toString();
 		
-		inicializeGraph();
+		initializeGraph();
 
 		Box bdb = page.getRoot();
 		this.insertBox(bdb);
 
 		insertAllBoxes(bdb);
 	}
-
-	
 	
 	/*
-	 * it initializes graph model
+	 * Initializes graph model
 	 * 
 	 * @param url defines page url for the identification
 	 * 
 	 * @return launch node for the element linking
 	 */
-	private URI inicializeGraph() {
+	private URI initializeGraph() {
 
-		this.graph = new LinkedHashModel(); // it holds whole model
-		this.vf = ValueFactoryImpl.getInstance(); // constructor for the value
-													// creation
-		this.dateTime = getDateTime();
-		this.uniqueID = getLaunchIdFromDatetime(this.dateTime); // it represents
-																// unique id
-
+		graph = new LinkedHashModel(); // it holds whole model
+		vf = ValueFactoryImpl.getInstance();
+		
+		String dateTime = getDateTime();
+		launchID = getLaunchIdFromDatetime(dateTime);
+		
 		// inicialization with launch node
-		this.pageNode = new URIImpl(baseUrl + "#" + this.uniqueID);
-		graph.add(this.pageNode, RDF.TYPE, new URIImpl(BoxOnt.Page));
-		graph.add(this.pageNode,
-				new URIImpl(BoxOnt.LaunchDatetime.toString()),
-				vf.createLiteral(this.dateTime));
-		graph.add(this.pageNode, new URIImpl(BoxOnt.sourceUrl.toString()),
-				vf.createLiteral(this.baseUrl));
+		pageNode = vf.createURI(baseUrl + "#" + this.launchID);
+		graph.add(pageNode, RDF.TYPE, BOX.Page);
+		graph.add(pageNode,	BOX.launchDatetime,	vf.createLiteral(dateTime));
+		graph.add(pageNode, BOX.sourceUrl, vf.createLiteral(baseUrl));
 
 		return this.pageNode;
 	}
@@ -109,8 +101,7 @@ public class BigdataBoxModelBuilder {
 		// in case of element with children
 		for (int i = 0; i < parent.getChildCount(); i++) {
 			Box sub1 = parent.getChildBox(i);
-
-			this.insertBox(sub1);
+			insertBox(sub1);
 		}
 
 		// if there are some children
@@ -127,119 +118,64 @@ public class BigdataBoxModelBuilder {
 	 */
 	private void insertBox(Box box) {
 
-		// unique identification from CSSBox
-		int id = box.getId();
-
 		// add BOX individual into graph
-		URI individual = new URIImpl(baseUrl + "#" + this.uniqueID + "-" + id);
-		graph.add(individual, RDF.TYPE, vf.createURI(BoxOnt.Box));
-
-		// unique identificator of box
-		graph.add(individual, new URIImpl(BoxOnt.id.toString()), vf.createLiteral(id));
+		final URI individual = getBoxUri(box);
+		graph.add(individual, RDF.TYPE, BOX.Box);
 
 		// pin to launch node
-		graph.add(individual, new URIImpl(BoxOnt.belongsTo.toString()), this.pageNode);
+		graph.add(individual, BOX.belongsTo, pageNode);
+		
+		//parent
+		if (box.getParentBox() != null)
+		    graph.add(individual, BOX.isChildOf, getBoxUri(box.getParentBox()));
 
 		// store position and size of element
 		// Rectangular rec = box.getContentBounds();
 		Rectangular rec = box.getBounds();
-		graph.add(individual, new URIImpl(BoxOnt.height.toString()),
-				vf.createLiteral(rec.getHeight()));
-		graph.add(individual, new URIImpl(BoxOnt.width.toString()),
-				vf.createLiteral(rec.getWidth()));
-		graph.add(individual, new URIImpl(BoxOnt.positionX.toString()),
-				vf.createLiteral(rec.getX1()));
-		graph.add(individual, new URIImpl(BoxOnt.positionY.toString()),
-				vf.createLiteral(rec.getY1()));
+		graph.add(individual, BOX.height, vf.createLiteral(rec.getHeight()));
+		graph.add(individual, BOX.width, vf.createLiteral(rec.getWidth()));
+		graph.add(individual, BOX.positionX, vf.createLiteral(rec.getX1()));
+		graph.add(individual, BOX.positionY, vf.createLiteral(rec.getY1()));
 
-		// it prepares color string to hex definition
-		try {
-			// int intAlpha = Integer.valueOf(String.valueOf(
-			// box.getBackgroundColor().getAlpha() ));
-			int intRed = Integer.valueOf(String.valueOf(box
-					.getBackgroundColor().getRed()));
-			int intGreen = Integer.valueOf(String.valueOf(box
-					.getBackgroundColor().getGreen()));
-			int intBlue = Integer.valueOf(String.valueOf(box
-					.getBackgroundColor().getBlue()));
-
-			graph.add(
-					individual,
-					new URIImpl(BoxOnt.backgroundColor.toString()),
-					vf.createLiteral("#"
-							+ stringPad(Integer.toHexString(intRed), "00")
-							+ stringPad(Integer.toHexString(intGreen), "00")
-							+ stringPad(Integer.toHexString(intBlue), "00")));
-		} catch (Exception ex) {
+		if (box.getBackgroundColor() != null)
+		{
+    		final String bgcol = String.format("#%02x%02x%02x", 
+    		        box.getBackgroundColor().getRed(),
+    		        box.getBackgroundColor().getGreen(),
+    		        box.getBackgroundColor().getBlue());
+            graph.add(individual, BOX.backgroundColor, vf.createLiteral(bgcol));
 		}
 
 		// add text content into element
 		if (box.getType() == Type.TEXT_CONTENT) {
-			graph.add(individual, new URIImpl(BoxOnt.hasText.toString()),
-					vf.createLiteral(box.getText()));
-
-			// font attributes
-			graph.add(individual, new URIImpl(BoxOnt.fontFamily),
-					vf.createLiteral(box.getFontFamily()));
-			graph.add(individual, new URIImpl(BoxOnt.fontSize),
-					vf.createLiteral(box.getFontSize()));
-			graph.add(individual, new URIImpl(BoxOnt.fontWeight),
-					vf.createLiteral(box.getFontWeight()));
-			graph.add(individual, new URIImpl(BoxOnt.fontStyle),
-					vf.createLiteral(box.getFontStyle()));
+			graph.add(individual, BOX.hasText, vf.createLiteral(box.getText()));
 		}
-
-		String tagName = box.getTagName();
-		if (tagName != null && !tagName.isEmpty()) {
-
-			graph.add(individual, new URIImpl(BoxOnt.hasTag),
-					vf.createLiteral(tagName));
-		}
-
+		// font attributes
+		graph.add(individual, BOX.fontFamily, vf.createLiteral(box.getFontFamily()));
+		graph.add(individual, BOX.fontSize, vf.createLiteral(box.getFontSize()));
+		graph.add(individual, BOX.fontWeight, vf.createLiteral(box.getFontWeight()));
+		graph.add(individual, BOX.fontStyle, vf.createLiteral(box.getFontStyle()));
+        graph.add(individual, BOX.underline, vf.createLiteral(box.getUnderline()));
+        graph.add(individual, BOX.lineThrough, vf.createLiteral(box.getLineThrough()));
 		
+        final String col = String.format("#%02x%02x%02x", 
+                box.getColor().getRed(),
+                box.getColor().getGreen(),
+                box.getColor().getBlue());
+        graph.add(individual, BOX.color, vf.createLiteral(col));
 
-		// append background-color into graph
-		try {
-			// int intAlpha =
-			// Integer.valueOf(String.valueOf(box.getColor().getAlpha() ));
-			int intRed = Integer.valueOf(String
-					.valueOf(box.getColor().getRed()));
-			int intGreen = Integer.valueOf(String.valueOf(box.getColor()
-					.getGreen()));
-			int intBlue = Integer.valueOf(String.valueOf(box.getColor()
-					.getBlue()));
-
-			graph.add(
-					individual,
-					new URIImpl(BoxOnt.color.toString()),
-					vf.createLiteral("#"
-							+ stringPad(Integer.toHexString(intRed), "00")
-							+ stringPad(Integer.toHexString(intGreen), "00")
-							+ stringPad(Integer.toHexString(intBlue), "00")));
-		} catch (Exception ex) {
-		}
-
-	}
-
-	/*
-	 * Add the pad to the left of string then take as many characters from the
-	 * right that is the same length as the pad. This would normally mean
-	 * starting my substring at pad.length() + string.length() - pad.length()
-	 * but obviously the pad.length()'s cancel.
-	 * 
-	 * 00000000sss ^ ----- Cut before this character - pos = 8 + 3 - 8 = 3
-	 */
-	protected static String stringPad(String string, String pad) {
-		return (pad + string).substring(string.length());
 	}
 
 	public Graph getGraph() {
 		return graph;
 	}
 
-	public URIImpl getLaunchNode() {
+	public URI getLaunchNode() {
 		return pageNode;
 	} 
 
-
+	public URI getBoxUri(Box box) {
+	    return vf.createURI(baseUrl + "#" + launchID + "-" + box.getId());
+	}
+	
 }

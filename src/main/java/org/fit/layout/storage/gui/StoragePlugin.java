@@ -25,6 +25,7 @@ import javax.swing.SwingConstants;
 import org.fit.layout.gui.Browser;
 import org.fit.layout.gui.BrowserPlugin;
 import org.fit.layout.model.AreaTree;
+import org.fit.layout.model.LogicalAreaTree;
 import org.fit.layout.model.Page;
 import org.fit.layout.storage.BigdataInterface;
 import org.fit.layout.storage.model.BigdataAreaTree;
@@ -373,9 +374,10 @@ public class StoragePlugin implements BrowserPlugin
 				public void actionPerformed(ActionEvent e) {
 					Page page = browser.getPage();
 					AreaTree atree = browser.getAreaTree();
+					LogicalAreaTree ltree = browser.getLogicalTree();
 					
 					if(atree!=null && page!=null) {
-						bdi.insertAreaTree( atree , new URIImpl( cbx_pages.getSelectedItem().toString() ) );
+						bdi.insertAreaTree(atree, ltree, new URIImpl(cbx_pages.getSelectedItem().toString()));
 					}
 					
 					loadAllPages();
