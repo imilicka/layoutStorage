@@ -318,7 +318,9 @@ public class BigdataInterface {
 	public void insertAreaTree(AreaTree atree, LogicalAreaTree ltree, URIImpl pageId) {
 		
 		try {
-			String actualUrl = pageId.toString().substring(0, pageId.toString().lastIndexOf("#"));
+		    String actualUrl = pageId.toString();
+		    if (actualUrl.lastIndexOf("#") != -1)
+		        actualUrl = actualUrl.substring(0, actualUrl.lastIndexOf("#"));
 			
 			BigdataAreaModelBuilder buildingModel = new BigdataAreaModelBuilder(atree, ltree, pageId, actualUrl);
 			insertGraph(buildingModel.getGraph());
