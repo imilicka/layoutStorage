@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.Scanner;
 
 import org.fit.layout.api.ScriptObject;
 import org.fit.layout.model.AreaTree;
@@ -83,6 +84,27 @@ public class ScriptApi implements ScriptObject
     public void clearDB()
     {
         bdi.clearRDFDatabase();
+    }
+    
+    public void execQueryFromResource(String res)
+    {
+        Scanner scan = new Scanner(ClassLoader.getSystemResourceAsStream(res));
+        String query = scan.useDelimiter("\\Z").next();
+        scan.close();
+        bdi.execSparql(query);
+    }
+    
+    public void importTurtle(String turtle)
+    {
+        bdi.importTurtle(turtle);
+    }
+    
+    public void importTurtleFromResource(String res)
+    {
+        Scanner scan = new Scanner(ClassLoader.getSystemResourceAsStream(res));
+        String turtle = scan.useDelimiter("\\Z").next();
+        scan.close();
+        bdi.importTurtle(turtle);
     }
     
 }
