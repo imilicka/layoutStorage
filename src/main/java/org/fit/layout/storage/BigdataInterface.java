@@ -1,5 +1,7 @@
 package org.fit.layout.storage;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +29,8 @@ import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
+import org.openrdf.rio.RDFFormat;
+import org.openrdf.rio.RDFParseException;
 
 import com.bigdata.rdf.sail.webapp.client.IPreparedGraphQuery;
 
@@ -318,7 +322,9 @@ public class BigdataInterface {
 	public void insertAreaTree(AreaTree atree, LogicalAreaTree ltree, URIImpl pageId) {
 		
 		try {
-			String actualUrl = pageId.toString().substring(0, pageId.toString().lastIndexOf("#"));
+		    String actualUrl = pageId.toString();
+		    if (actualUrl.lastIndexOf("#") != -1)
+		        actualUrl = actualUrl.substring(0, actualUrl.lastIndexOf("#"));
 			
 			BigdataAreaModelBuilder buildingModel = new BigdataAreaModelBuilder(atree, ltree, pageId, actualUrl);
 			insertGraph(buildingModel.getGraph());
@@ -405,8 +411,32 @@ public class BigdataInterface {
 		
 	}
 
-
+	public void execSparql(String query) {
+	    
+        try {
+            Update upd = bddb.repo.getConnection().prepareUpdate(QueryLanguage.SPARQL, query);
+            upd.execute();
+        } catch (MalformedQueryException | RepositoryException | UpdateExecutionException e) {
+            e.printStackTrace();
+        }
+        
+	}
 	
+    public void importTurtle(String query) {
+        
+        try {
+            bddb.repo.getConnection().add(new StringReader(query), null, RDFFormat.TURTLE);
+        } catch (RepositoryException e) {
+            e.printStackTrace();
+        } catch (RDFParseException e)
+        {
+            e.printStackTrace();
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        
+    }
 
 	
 	//PRIVATE =========================================
